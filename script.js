@@ -591,20 +591,21 @@ function populateEquipmentDropdown() {
 // ============================================
 
 function login() {
-  const empNo = document.getElementById('empNumber').value.trim();
-  const validLoginCode = '18125';
-  
-  if (!empNo) {
-    alert('Please enter Employee Number');
-    return;
-  }
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const validUsername = 'admin';
+  const validPassword = '18125';
 
-  if (empNo !== validLoginCode) {
-    alert('Invalid login details. Please enter 18125.');
+  if (username !== validUsername || password !== validPassword) {
+    alert('Wrong username or password');
     return;
   }
   
-  currentUser = { ...MASTER_DATA.employee, empNo: validLoginCode };
+  currentUser = {
+    ...MASTER_DATA.employee,
+    name: 'Admin',
+    empNo: validPassword
+  };
   
   document.getElementById('loginDiv').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
@@ -618,7 +619,8 @@ function logout() {
     currentPRItems = [];
     document.getElementById('loginDiv').classList.remove('hidden');
     document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('empNumber').value = '';
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
   }
 }
 
@@ -2074,12 +2076,14 @@ function generatePRNumber() {
 document.addEventListener('DOMContentLoaded', function() {
   initializeData();
   
-  const empInput = document.getElementById('empNumber');
-  if (empInput) {
-    empInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        login();
-      }
-    });
-  }
+  ['username', 'password'].forEach(function(id) {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          login();
+        }
+      });
+    }
+  });
 });

@@ -646,13 +646,14 @@ tr:hover { background: #f8f9fa; }
     <h1>SMART Purchase Requisition</h1>
   </div>
   
-  <div class="demo-info">
-    <strong>Demo Mode - Offline System</strong>
-  </div>
-  
   <div class="form-group">
-    <label>Employee Number</label>
-    <input id="empNumber" placeholder="Enter Employee Number" autocomplete="off">
+    <label>Username</label>
+    <input id="username" placeholder="Enter Username" autocomplete="off">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Enter Password" autocomplete="off">
   </div>
   
   <button class="btn" style="width: 100%;" onclick="login()">LOGIN</button>
@@ -1223,19 +1224,22 @@ let isAdminMode = true; // Demo: Always admin
 // ============================================
 
 function login() {
-  const empNo = document.getElementById('empNumber').value.trim();
-  const validLoginCode = '18125';
-  if (!empNo) {
-    alert('Please enter Employee Number');
-    return;
-  }
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const validUsername = 'admin';
+  const validPassword = '18125';
 
-  if (empNo !== validLoginCode) {
-    alert('Invalid login details. Please enter 18125.');
+  if (username !== validUsername || password !== validPassword) {
+    alert('Wrong username or password');
     return;
   }
   
-  currentUser = { ...MASTER_DATA.employee, empNo: validLoginCode, isAdmin: true };
+  currentUser = {
+    ...MASTER_DATA.employee,
+    name: 'Admin',
+    empNo: validPassword,
+    isAdmin: true
+  };
   document.getElementById('loginDiv').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
   
@@ -1250,7 +1254,8 @@ function logout() {
   selectedMaterial = null;
   document.getElementById('mainApp').classList.add('hidden');
   document.getElementById('loginDiv').classList.remove('hidden');
-  document.getElementById('empNumber').value = '';
+  document.getElementById('username').value = '';
+  document.getElementById('password').value = '';
 }
 
 function displayUserInfo() {
@@ -2809,6 +2814,17 @@ function switchTab(tabName) {
 
 // Add some demo PRs for testing
 window.addEventListener('DOMContentLoaded', function() {
+  ['username', 'password'].forEach(function(id) {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          login();
+        }
+      });
+    }
+  });
+
   // Add 1 demo approved PR for testing purchase functionality
   allPRs.push({
     prNumber: String(prCounter++),
