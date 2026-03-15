@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centre-Break Disconnector — Training Simulator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+:root{--bg:#0e1318;--sfc:rgba(18,24,32,0.94);--bdr:rgba(100,170,230,0.09);--acc:#00bbee;--wrn:#ff6a3d;--ok:#2ecc71;--dng:#e74c3c;--gld:#f0b429;--txt:#b0c4d4;--dim:#4a5a68;--brt:#e8eef4;--pnl:rgba(12,18,26,0.97)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:'Barlow',sans-serif;color:var(--txt);overflow:hidden;height:100vh}
+canvas{position:fixed;inset:0;z-index:0;cursor:grab}
+canvas:active{cursor:grabbing}
+
+.hdr{position:fixed;top:0;left:0;right:0;z-index:100;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;background:linear-gradient(to bottom,rgba(14,19,24,.96) 55%,transparent)}
+.hdr-l{display:flex;align-items:center;gap:10px}
+.hdr-i{width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,var(--acc),#0077aa);display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:800}
+.hdr-t{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:4px;text-transform:uppercase;color:var(--acc)}
+.hdr-h{font-size:15px;font-weight:700;color:var(--brt)}
+.hdr-r{display:flex;gap:4px}
+.bdg{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px;border:1px solid var(--bdr);background:var(--sfc);color:var(--dim)}
+.bdg.live{border-color:rgba(46,204,113,.3);color:var(--ok)}.bdg.live::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--ok);margin-right:4px;animation:bl 1.5s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+.stbar{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:150;display:flex;background:var(--sfc);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;pointer-events:none}
+.sc{padding:8px 13px;display:flex;flex-direction:column;align-items:center;gap:2px;border-right:1px solid var(--bdr)}.sc:last-child{border-right:none}
+.sl{font-family:'IBM Plex Mono',monospace;font-size:6.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)}
+.sv{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;transition:color .3s}
+.sv.open{color:var(--ok)}.sv.closed{color:var(--dng)}.sv.moving{color:var(--gld);animation:bl .6s infinite}.sv.safe{color:var(--ok)}.sv.energized{color:var(--dng)}.sv.locked{color:var(--wrn)}.sv.unlocked{color:var(--ok)}
+
+.ctrl{position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:200;width:260px;max-height:94vh;background:var(--pnl);border:1px solid var(--bdr);border-radius:12px;overflow-y:auto;pointer-events:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.cs{padding:10px 12px;border-bottom:1px solid var(--bdr)}.cs:last-child{border-bottom:none}
+.ct{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);margin-bottom:7px}
+.bg{display:flex;gap:4px;margin-bottom:4px}
+.ob{flex:1;padding:10px 5px;border-radius:8px;border:2px solid;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .3s;text-align:center}
+.ob:disabled{opacity:.3;cursor:not-allowed}
+.oc{background:rgba(231,76,60,.06);border-color:rgba(231,76,60,.25);color:#e74c3c}.oc:hover:not(:disabled){background:rgba(231,76,60,.14)}
+.oo{background:rgba(46,204,113,.06);border-color:rgba(46,204,113,.25);color:#2ecc71}.oo:hover:not(:disabled){background:rgba(46,204,113,.14)}
+.oe{background:rgba(240,180,41,.06);border-color:rgba(240,180,41,.25);color:#f0b429}.oe:hover:not(:disabled){background:rgba(240,180,41,.14)}
+.ors{background:rgba(0,187,238,.04);border-color:rgba(0,187,238,.12);color:var(--acc);border-width:1px;font-size:8px;padding:7px}
+.spr{display:flex;align-items:center;gap:5px;margin-top:4px}
+.spr span{font-size:7.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.spr input[type=range]{flex:1;-webkit-appearance:none;height:2px;background:rgba(255,255,255,.05);border-radius:2px;outline:none}
+.spr input::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--acc);cursor:pointer}
+
+.steps{display:flex;flex-direction:column;gap:1px}
+.si{display:flex;align-items:flex-start;gap:6px;padding:4px 6px;border-radius:4px;transition:all .3s}
+.si.act{background:rgba(0,187,238,.05)}.si.dn{opacity:.4}
+.sn{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--dim);display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:7px;color:var(--dim);flex-shrink:0;transition:all .3s}
+.si.act .sn{border-color:var(--acc);color:var(--acc)}.si.dn .sn{border-color:var(--ok);color:var(--ok)}
+.st{font-size:9.5px;line-height:1.3;color:var(--dim)}.si.act .st{color:var(--brt)}
+
+.lb{max-height:90px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.le{font-family:'IBM Plex Mono',monospace;font-size:7.5px;line-height:1.4;padding:2px 4px;display:flex;gap:4px}
+.le .lt{color:var(--dim);flex-shrink:0}
+.le.info .lm{color:var(--acc)}.le.warn .lm{color:var(--wrn)}.le.ok .lm{color:var(--ok)}.le.err .lm{color:var(--dng)}
+
+.ib{padding:5px 7px;border-radius:5px;border:1px solid;display:flex;align-items:center;gap:5px;margin-top:3px;font-size:8.5px;line-height:1.2}
+.ib.ok{border-color:rgba(46,204,113,.12);color:var(--ok)}.ib.wn{border-color:rgba(255,106,61,.12);color:var(--wrn)}
+
+.f3{position:fixed;z-index:50;pointer-events:none;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:12px;border:1px solid;white-space:nowrap;transition:all .3s}
+.f3.op{background:rgba(46,204,113,.1);border-color:rgba(46,204,113,.2);color:var(--ok)}
+.f3.cl{background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.2);color:var(--dng)}
+.f3.mv{background:rgba(240,180,41,.1);border-color:rgba(240,180,41,.2);color:var(--gld);animation:bl .6s infinite}
+.ph3{position:fixed;z-index:50;pointer-events:none;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:2px;text-shadow:0 0 12px rgba(0,0,0,.9)}
+
+.pn{position:fixed;left:10px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:2px}
+.pb{background:var(--sfc);border:1px solid var(--bdr);border-radius:5px;padding:4px 8px;color:var(--dim);font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:left;pointer-events:auto}
+.pb:hover{color:var(--txt);transform:translateX(2px)}.pb.at{color:var(--acc);border-color:rgba(0,187,238,.2)}
+
+.ip{position:fixed;left:10px;bottom:10px;z-index:200;width:250px;max-height:35vh;background:var(--pnl);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;pointer-events:auto;transform:translateY(120%);opacity:0;transition:all .35s;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+.ip.open{transform:translateY(0);opacity:1}
+.ipb{height:2px;background:linear-gradient(90deg,var(--acc),var(--wrn))}
+.iph{padding:8px 12px 5px;position:relative}.ipn{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:2px;color:var(--acc)}.ipt{font-size:13px;font-weight:700;color:var(--brt)}
+.ipc{position:absolute;top:6px;right:8px;width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.05);background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .2s}.ipc:hover{color:var(--wrn)}
+.ipbd{padding:5px 12px 10px;overflow-y:auto;max-height:22vh}
+.sr{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.015)}.sr:last-child{border-bottom:none}
+.sk{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}.svl{font-size:10px;color:var(--txt);text-align:right}
+
+.bh{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;pointer-events:none}
+.hp{padding:4px 9px;background:var(--sfc);border:1px solid var(--bdr);border-radius:12px}
+.hp span{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+.ctrl::-webkit-scrollbar,.lb::-webkit-scrollbar{width:2px}.ctrl::-webkit-scrollbar-thumb{background:rgba(0,187,238,.1);border-radius:2px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hdr"><div class="hdr-l"><div class="hdr-i">⚡</div><div><div class="hdr-t">Training Simulator</div><div class="hdr-h">Centre-Break Disconnector — 145 kV</div></div></div><div class="hdr-r"><div class="bdg live">Active</div><div class="bdg">IEC 62271-102</div></div></div>
+<div class="stbar"><div class="sc"><div class="sl">Blades</div><div class="sv open" id="sB">OPEN</div></div><div class="sc"><div class="sl">Earth</div><div class="sv locked" id="sE">CLOSED</div></div><div class="sc"><div class="sl">Line</div><div class="sv safe" id="sL">DE-ENERGIZED</div></div><div class="sc"><div class="sl">Safety</div><div class="sv safe" id="sK">GROUNDED</div></div><div class="sc"><div class="sl">Angle</div><div class="sv" id="sA" style="color:var(--acc)">90°</div></div></div>
+
+<div class="ctrl">
+<div class="cs"><div class="ct">⊙ Operation Controls</div>
+<div class="bg"><button class="ob oc" id="bC" onclick="doClose()">⊕ CLOSE</button><button class="ob oo" id="bO" onclick="doOpen()" disabled>⊖ OPEN</button></div>
+<div class="bg"><button class="ob oe" id="bE" onclick="doEarth()"><span id="eL">⏚ OPEN EARTH</span></button></div>
+<div class="bg"><button class="ob ors" onclick="doReset()">↺ RESET</button></div>
+<div class="spr"><span>Speed</span><input type="range" id="spd" min="0.3" max="3" step="0.1" value="1"><span id="spv">1×</span></div></div>
+<div class="cs"><div class="ct">⊙ Steps</div><div class="steps" id="stps"></div></div>
+<div class="cs"><div class="ct">⊙ Interlocks</div><div id="ilk"></div></div>
+<div class="cs"><div class="ct">⊙ Log</div><div class="lb" id="log"></div></div>
+<div class="cs"><div class="ct">⊙ Training</div><div style="font-size:9px;line-height:1.5;color:var(--dim)"><b style="color:var(--brt)">Close:</b> Open earth → Close blades<br><b style="color:var(--brt)">Open:</b> Open blades → Close earth<br><span style="color:var(--wrn)">⚠ NEVER earth while blades CLOSED</span></div></div>
+</div>
+
+<div class="pn" id="pN"></div>
+<div class="ip" id="iP"><div class="ipb"></div><div class="iph"><div class="ipn" id="iPn"></div><div class="ipt" id="iPt"></div><button class="ipc" onclick="clInfo()">✕</button></div><div class="ipbd" id="iPb"></div></div>
+
+<div class="f3 op" id="f3b">● OPEN — 90°</div>
+<div class="f3 cl" id="f3e">⏚ EARTH CLOSED</div>
+<div class="ph3" id="phR" style="color:#ff4444">R-PHASE</div>
+<div class="ph3" id="phY" style="color:#eecc00">Y-PHASE</div>
+<div class="ph3" id="phB" style="color:#4488ff">B-PHASE</div>
+
+<div class="bh"><div class="hp"><span>↻ Drag Rotate</span></div><div class="hp"><span>Scroll Zoom</span></div><div class="hp"><span>Click Parts</span></div></div>
+
+<script>
+// ========== DATA ==========
+const PD=[
+{id:'base',name:'Base Frame',n:'01',d:{Material:'Galvanized Steel IS:2062',Frame:'H-frame + gussets',Foundation:'4× M24 bolts'},ds:'Galvanized steel support structure.'},
+{id:'ins',name:'Post Insulator',n:'02',d:{Material:'C-130 Porcelain',Sheds:'15 alternating','Creepage':'≥4250mm'},ds:'Brown porcelain with rain sheds.'},
+{id:'bld',name:'Contact Blade',n:'03',d:{Material:'Aluminium','Rating':'800-3150A','Short-circuit':'40kA/3s'},ds:'Centre-break aluminium blades.'},
+{id:'jaw',name:'Fixed Jaw',n:'04',d:{Material:'Copper silver-plated',Fingers:'8-12 spring','Resistance':'<60µΩ'},ds:'Copper jaws grip blade tips.'},
+{id:'mbox',name:'Mechanism Box',n:'05',d:{Type:'Manual+Motor','Enclosure':'IP55',Aux:'4NO+4NC'},ds:'Per-phase mechanism box.'},
+{id:'pipe',name:'Operating Pipe',n:'06',d:{Material:'GI tube Ø32mm',Route:'MB→Insulator base'},ds:'Torque transmission pipe.'},
+{id:'erth',name:'Earth Switch',n:'07',d:{Voltage:'145kV','Withstand':'40kA/1s',Interlock:'With main blade'},ds:'Green earth switch with fixed contact on jaw.'}
+];
+const CS=['Verify earth OPEN','Release interlocks','Initiate CLOSE','Blades rotating','Verify contact','CLOSED — ENERGIZED'];
+const OS=['Initiate OPEN','Blades rotating','Verify air gap 90°','DE-ENERGIZED','Apply earth if needed','SAFE for maintenance'];
+
+// ========== STATE ==========
+let bSt='open',eSt='closed',bAng=90,tAng=90,spd=1;
+
+// ========== THREE.JS ==========
+let scene,cam,ren;
+let mainGroup;
+let bladeGroups=[];
+let earthPivots=[];
+let meshMap={};
+let anchors={};
+let selP=null,mdn=false,pvx=0,pvy=0;
+let trY=0.6,trX=0.18,crY=0.6,crX=0.18,camD=32,tgtD=32,autoRot=true;
+
+const SP=5.5;
+const phases=[{px:-SP,nm:'R',col:0xff4444},{px:0,nm:'Y',col:0xeecc00},{px:SP,nm:'B',col:0x4488ff}];
+
+function addMesh(parent,geo,mat,x,y,z,pid){
+  const m=new THREE.Mesh(geo,mat);
+  m.position.set(x,y,z);
+  m.castShadow=true;
+  m.receiveShadow=true;
+  if(pid)m.userData={pid:pid};
+  parent.add(m);
+  return m;
+}
+
+function init(){
+  // Scene
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x0e1318);
+
+  // Camera — far back and high enough
+  cam=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,0.1,500);
+
+  // Renderer
+  ren=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+  ren.setSize(innerWidth,innerHeight);
+  ren.setPixelRatio(Math.min(devicePixelRatio,2));
+  ren.shadowMap.enabled=true;
+  ren.shadowMap.type=THREE.PCFSoftShadowMap;
+  ren.toneMapping=THREE.ACESFilmicToneMapping;
+  ren.toneMappingExposure=1.6;
+  ren.outputEncoding=THREE.sRGBEncoding;
+
+  // === LIGHTS (studio setup for porcelain & metal highlights) ===
+  var a1=new THREE.AmbientLight(0x8899aa,0.55);
+  scene.add(a1);
+
+  var h1=new THREE.HemisphereLight(0xddeeff,0x554433,0.45);
+  scene.add(h1);
+
+  // Key light — warm, strong, for shadows and specular
+  var d1=new THREE.DirectionalLight(0xfff8f0,1.6);
+  d1.position.set(15,25,20);
+  d1.castShadow=true;
+  d1.shadow.mapSize.set(2048,2048);
+  d1.shadow.camera.left=-25;d1.shadow.camera.right=25;
+  d1.shadow.camera.top=25;d1.shadow.camera.bottom=-5;
+  d1.shadow.camera.near=1;d1.shadow.camera.far=80;
+  d1.shadow.bias=-0.001;
+  scene.add(d1);
+
+  // Fill light — cool blue, softer
+  var d2=new THREE.DirectionalLight(0x8899bb,0.55);
+  d2.position.set(-12,15,-10);
+  scene.add(d2);
+
+  // Bottom fill
+  var d3=new THREE.DirectionalLight(0xffffff,0.2);
+  d3.position.set(0,-5,10);
+  scene.add(d3);
+
+  // Specular highlight spot — creates sharp gloss reflections on porcelain
+  var spot1=new THREE.SpotLight(0xffffff,0.8,60,Math.PI/6,0.5,1);
+  spot1.position.set(8,20,10);
+  spot1.target.position.set(0,6,0);
+  scene.add(spot1);
+  scene.add(spot1.target);
+
+  // Rim light — catches edges of metal parts
+  var d4=new THREE.DirectionalLight(0xaaccee,0.35);
+  d4.position.set(-8,8,-15);
+  scene.add(d4);
+
+  // Ground
+  var gndMat=new THREE.MeshStandardMaterial({color:0x1a2028,roughness:0.85,metalness:0.05});
+  var gnd=new THREE.Mesh(new THREE.PlaneGeometry(120,120),gndMat);
+  gnd.rotation.x=-Math.PI/2;
+  gnd.receiveShadow=true;
+  scene.add(gnd);
+
+  var grid=new THREE.GridHelper(60,60,0x252f3a,0x1e2830);
+  grid.position.y=0.02;
+  grid.material.opacity=0.4;
+  grid.material.transparent=true;
+  scene.add(grid);
+
+  // === BUILD MODEL ===
+  mainGroup=new THREE.Group();
+  scene.add(mainGroup);
+
+  // === ENVIRONMENT MAP for realistic reflections ===
+  var cubeRT=new THREE.WebGLCubeRenderTarget(256);
+  var pmremGen=new THREE.PMREMGenerator(ren);
+  pmremGen.compileCubemapShader();
+  // Create a simple env scene for reflections
+  var envScene=new THREE.Scene();
+  envScene.background=new THREE.Color(0x334455);
+  var envLight1=new THREE.DirectionalLight(0xffffff,1.0);envLight1.position.set(5,8,3);envScene.add(envLight1);
+  var envLight2=new THREE.DirectionalLight(0x6688aa,0.5);envLight2.position.set(-3,2,-5);envScene.add(envLight2);
+  envScene.add(new THREE.AmbientLight(0x556677,0.3));
+  // Floor for env reflection
+  var envFloor=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshStandardMaterial({color:0x445566}));
+  envFloor.rotation.x=-Math.PI/2;envFloor.position.y=-2;envScene.add(envFloor);
+  var envMap=pmremGen.fromScene(envScene,0.04).texture;
+
+  // ===== REALISTIC MATERIALS =====
+
+  // --- GALVANIZED STEEL: slightly rough, silvery blue-gray, visible grain ---
+  var galv=new THREE.MeshStandardMaterial({
+    color:0xB0B6BC, metalness:0.72, roughness:0.34,
+    envMap:envMap, envMapIntensity:0.4
+  });
+  var galvD=new THREE.MeshStandardMaterial({
+    color:0x8A9098, metalness:0.78, roughness:0.30,
+    envMap:envMap, envMapIntensity:0.35
+  });
+
+  // --- PORCELAIN: high-gloss brown glaze, very low metalness, smooth ---
+  // Core body — dark chocolate brown, glossy ceramic
+  var porcCore=new THREE.MeshPhysicalMaterial({
+    color:0x2E1408, metalness:0.0, roughness:0.18,
+    clearcoat:0.9, clearcoatRoughness:0.08,
+    envMap:envMap, envMapIntensity:0.6,
+    reflectivity:0.7
+  });
+  // Large sheds — rich dark brown with glaze sheen
+  var porcShedBig=new THREE.MeshPhysicalMaterial({
+    color:0x4A2010, metalness:0.0, roughness:0.15,
+    clearcoat:1.0, clearcoatRoughness:0.05,
+    envMap:envMap, envMapIntensity:0.65,
+    reflectivity:0.75
+  });
+  // Small sheds — slightly darker
+  var porcShedSm=new THREE.MeshPhysicalMaterial({
+    color:0x3C1A0C, metalness:0.0, roughness:0.16,
+    clearcoat:0.95, clearcoatRoughness:0.06,
+    envMap:envMap, envMapIntensity:0.6,
+    reflectivity:0.7
+  });
+  // Shed underside — matte unglazed look
+  var porcUnglazed=new THREE.MeshStandardMaterial({
+    color:0x5C3018, metalness:0.0, roughness:0.65
+  });
+
+  // --- METAL END CAPS: dark cast iron / ductile iron ---
+  var cap=new THREE.MeshStandardMaterial({
+    color:0x505458, metalness:0.85, roughness:0.25,
+    envMap:envMap, envMapIntensity:0.5
+  });
+  // Cap with slight rust patina
+  var capDark=new THREE.MeshStandardMaterial({
+    color:0x3E4248, metalness:0.82, roughness:0.32,
+    envMap:envMap, envMapIntensity:0.4
+  });
+
+  // --- ALUMINIUM BLADES: bright, slightly brushed ---
+  var alumBlade=new THREE.MeshPhysicalMaterial({
+    color:0xD8D8D2, metalness:0.92, roughness:0.12,
+    clearcoat:0.3, clearcoatRoughness:0.15,
+    envMap:envMap, envMapIntensity:0.7,
+    reflectivity:0.9
+  });
+
+  // --- COPPER JAWS: warm orange-bronze with tarnish ---
+  var copper=new THREE.MeshStandardMaterial({
+    color:0xBB6B2A, metalness:0.82, roughness:0.2,
+    envMap:envMap, envMapIntensity:0.55
+  });
+  var copperFin=new THREE.MeshStandardMaterial({
+    color:0xCC7E3E, metalness:0.85, roughness:0.18,
+    envMap:envMap, envMapIntensity:0.5
+  });
+
+  // --- MECHANISM BOX: painted steel, off-white / RAL 7035 ---
+  var mechWhite=new THREE.MeshStandardMaterial({
+    color:0xE8E2D6, metalness:0.05, roughness:0.68,
+    envMap:envMap, envMapIntensity:0.15
+  });
+  var mechDoor=new THREE.MeshStandardMaterial({
+    color:0xDDD8CC, metalness:0.04, roughness:0.7,
+    envMap:envMap, envMapIntensity:0.12
+  });
+
+  // --- EARTH SWITCH: industrial green paint ---
+  var earthGr=new THREE.MeshStandardMaterial({
+    color:0x1A8540, metalness:0.35, roughness:0.45,
+    envMap:envMap, envMapIntensity:0.25
+  });
+  var earthGrD=new THREE.MeshStandardMaterial({
+    color:0x146830, metalness:0.38, roughness:0.42,
+    envMap:envMap, envMapIntensity:0.2
+  });
+  var earthRod=new THREE.MeshStandardMaterial({
+    color:0x22A850, metalness:0.45, roughness:0.28,
+    envMap:envMap, envMapIntensity:0.35
+  });
+
+  // --- OPERATING PIPE: galvanized tube ---
+  var pipeM=new THREE.MeshStandardMaterial({
+    color:0x9A9EA4, metalness:0.72, roughness:0.32,
+    envMap:envMap, envMapIntensity:0.4
+  });
+
+  // --- WARNING YELLOW ---
+  var yellowWarn=new THREE.MeshStandardMaterial({
+    color:0xFFCC00, metalness:0.1, roughness:0.5
+  });
+
+  phases.forEach(function(ph,pi){
+    var poleG=new THREE.Group();
+    poleG.position.set(ph.px,0,0);
+
+    var LH=4.0; // leg height
+
+    // ===== BASE FRAME =====
+    // Left leg
+    addMesh(poleG,new THREE.BoxGeometry(0.4,LH,0.4),galv,-1.4,LH/2,0,'base');
+    // Right leg
+    addMesh(poleG,new THREE.BoxGeometry(0.4,LH,0.4),galv,1.4,LH/2,0,'base');
+    // Left foot
+    addMesh(poleG,new THREE.BoxGeometry(0.85,0.15,0.85),galv,-1.4,0.075,0,'base');
+    // Right foot
+    addMesh(poleG,new THREE.BoxGeometry(0.85,0.15,0.85),galv,1.4,0.075,0,'base');
+    // Top beam
+    addMesh(poleG,new THREE.BoxGeometry(3.3,0.34,0.34),galv,0,LH,0,'base');
+    // Cross brace
+    addMesh(poleG,new THREE.BoxGeometry(2.5,0.15,0.15),galv,0,1.3,0,'base');
+    // Left gusset
+    var lg=addMesh(poleG,new THREE.BoxGeometry(0.07,1.4,0.32),galv,-1.18,2.1,0,'base');
+    lg.rotation.z=-0.28;
+    // Right gusset
+    var rg=addMesh(poleG,new THREE.BoxGeometry(0.07,1.4,0.32),galv,1.18,2.1,0,'base');
+    rg.rotation.z=0.28;
+    // Bolts
+    [-1.4,1.4].forEach(function(lx){
+      [[-0.22,-0.22],[0.22,-0.22],[-0.22,0.22],[0.22,0.22]].forEach(function(bz){
+        addMesh(poleG,new THREE.CylinderGeometry(0.045,0.045,0.16,8),galvD,lx+bz[0],0.16,bz[1],'base');
+      });
+    });
+
+    if(pi===1) anchors['base']=new THREE.Vector3(ph.px,2,0);
+
+    // ===== POST INSULATORS (3 per pole: left, center, right) =====
+    [-1.1,0,1.1].forEach(function(ix){
+      var insBase=LH+0.2;
+
+      // Bottom metal flange (bolted to beam)
+      addMesh(poleG,new THREE.CylinderGeometry(0.34,0.38,0.1,24),cap,ix,insBase+0.05,0,'ins');
+      // Bottom cement ring
+      addMesh(poleG,new THREE.CylinderGeometry(0.3,0.34,0.12,24),capDark,ix,insBase+0.12,0,'ins');
+      // Bottom metal cap body
+      addMesh(poleG,new THREE.CylinderGeometry(0.28,0.3,0.18,24),cap,ix,insBase+0.22,0,'ins');
+
+      // Core porcelain column
+      var cH=5.0;
+      var coreBottom=insBase+0.31;
+      // Slightly tapered core
+      addMesh(poleG,new THREE.CylinderGeometry(0.17,0.19,cH,28),porcCore,ix,coreBottom+cH/2,0,'ins');
+
+      // Porcelain sheds — realistic profile with overhang and drip edge
+      var numSheds=16;
+      var shedSpacing=cH/numSheds;
+      for(var s=0;s<numSheds;s++){
+        var sy=coreBottom+0.2+s*shedSpacing;
+        var big=s%2===0;
+        var shedR=big?0.44:0.32;
+        var shedH=big?0.16:0.11;
+        var shedSegs=big?28:24;
+
+        // Shed top surface (glazed, smooth)
+        addMesh(poleG,new THREE.CylinderGeometry(shedR-0.05,shedR,shedH,shedSegs),big?porcShedBig:porcShedSm,ix,sy,0,'ins');
+
+        // Shed drip edge (slight overhang lip at bottom)
+        if(big){
+          var lipMesh=addMesh(poleG,new THREE.TorusGeometry(shedR-0.03,0.022,10,shedSegs),porcShedBig,ix,sy-shedH/2+0.01,0,'ins');
+          lipMesh.rotation.x=Math.PI/2;
+          // Underside of shed (unglazed, lighter)
+          addMesh(poleG,new THREE.CylinderGeometry(shedR-0.01,shedR-0.06,0.04,shedSegs),porcUnglazed,ix,sy-shedH/2-0.02,0,'ins');
+        }
+
+        // Neck ring between sheds (porcelain ridge)
+        if(s<numSheds-1 && big){
+          addMesh(poleG,new THREE.CylinderGeometry(0.22,0.22,0.06,20),porcCore,ix,sy+shedSpacing*0.5,0,'ins');
+        }
+      }
+
+      // Top cement ring
+      addMesh(poleG,new THREE.CylinderGeometry(0.26,0.28,0.1,24),capDark,ix,coreBottom+cH+0.08,0,'ins');
+      // Top metal cap
+      addMesh(poleG,new THREE.CylinderGeometry(0.28,0.3,0.2,24),cap,ix,coreBottom+cH+0.2,0,'ins');
+      // Top flange ring
+      addMesh(poleG,new THREE.CylinderGeometry(0.32,0.28,0.08,24),cap,ix,coreBottom+cH+0.32,0,'ins');
+      // Rotating head (dark iron, connects to blade)
+      addMesh(poleG,new THREE.CylinderGeometry(0.14,0.2,0.22,16),capDark,ix,coreBottom+cH+0.44,0,'ins');
+      // Small pin on top
+      addMesh(poleG,new THREE.CylinderGeometry(0.06,0.06,0.12,10),galvD,ix,coreBottom+cH+0.58,0,'ins');
+    });
+
+    if(pi===1) anchors['ins']=new THREE.Vector3(ph.px-1.1,7,0);
+
+    // ===== CONTACT BLADES (animated) =====
+    var bladeY=LH+0.2+5.0+0.78;
+    [-1,1].forEach(function(side){
+      var bg=new THREE.Group();
+      bg.position.set(0,bladeY,0);
+      bg._side=side;
+      // Main blade
+      addMesh(bg,new THREE.BoxGeometry(2.1,0.12,0.14),alumBlade,side*1.05,0,0,'bld');
+      // Thick tip
+      addMesh(bg,new THREE.BoxGeometry(0.28,0.2,0.2),alumBlade,side*2.1,0,0,'bld');
+      // Pivot
+      addMesh(bg,new THREE.CylinderGeometry(0.14,0.14,0.18,12),cap,0,0,0,'bld');
+      // Glow ring
+      var glMat=new THREE.MeshBasicMaterial({color:0x2ecc71,transparent:true,opacity:0.5});
+      var gl=new THREE.Mesh(new THREE.TorusGeometry(0.17,0.024,8,20),glMat);
+      gl.rotation.x=Math.PI/2;
+      bg.add(gl);
+      bg._glow=gl;
+      bladeGroups.push(bg);
+      poleG.add(bg);
+    });
+
+    if(pi===1) anchors['bld']=new THREE.Vector3(ph.px,bladeY+2,0);
+
+    // ===== FIXED JAWS (copper) =====
+    [-1.1,1.1].forEach(function(jx){
+      addMesh(poleG,new THREE.BoxGeometry(0.26,0.6,0.26),copper,jx,bladeY,0,'jaw');
+      [-0.07,0,0.07].forEach(function(fz){
+        addMesh(poleG,new THREE.BoxGeometry(0.045,0.44,0.045),copperFin,jx,bladeY+0.18,fz,'jaw');
+      });
+      addMesh(poleG,new THREE.BoxGeometry(0.38,0.14,0.38),cap,jx,bladeY+0.38,0,'jaw');
+    });
+
+    if(pi===1) anchors['jaw']=new THREE.Vector3(ph.px+1.1,bladeY+0.5,0);
+
+    // MB box Y position (used by both isolator and earth sections)
+    var mbY=1.8;
+
+    // ================================================================
+    // EARTH SWITCH — PRECISE GEOMETRY
+    // All coordinates are in pole-local space
+    // ================================================================
+
+    // --- FIXED CONTACT: mounted on outer face of RIGHT jaw (x=1.1) ---
+    // The fixed contact center point — this is where the rod tip MUST land
+    var fcX=1.45;                   // outer face of right jaw
+    var fcY=bladeY-0.15;            // slightly below jaw centre
+    // Fixed contact bracket (green, bolted to jaw)
+    addMesh(poleG,new THREE.BoxGeometry(0.28,0.55,0.28),earthGr,fcX,fcY,0,'erth');
+    // Receiving slot (bright green channel where rod tip seats in)
+    addMesh(poleG,new THREE.BoxGeometry(0.22,0.35,0.22),earthRod,fcX,fcY+0.05,0,'erth');
+    // Top contact face plate — this is the exact mating surface
+    addMesh(poleG,new THREE.BoxGeometry(0.26,0.08,0.26),earthRod,fcX,fcY+0.32,0,'erth');
+    // Mounting bracket connecting to jaw body
+    addMesh(poleG,new THREE.BoxGeometry(0.15,0.25,0.15),earthGrD,1.25,fcY-0.15,0,'erth');
+    addMesh(poleG,new THREE.BoxGeometry(0.15,0.15,0.15),earthGrD,1.1+0.13,fcY,0,'erth');
+
+    // --- PIVOT POINT: top centre of Earth MB box ---
+    var pvX=1.8;
+    var pvY=mbY+0.75;               // top of earth MB box = 2.55
+
+    // --- TARGET: centre-top of fixed contact face plate ---
+    var tgX=fcX;                    // 1.45
+    var tgY=fcY+0.32;              // top plate Y
+
+    // --- ROD LENGTH: exact distance pivot→target ---
+    var rdx=pvX-tgX;               // 1.8-1.45 = 0.35
+    var rdy=tgY-pvY;               // ~7.5
+    var rodLen=Math.sqrt(rdx*rdx+rdy*rdy);
+
+    // --- CLOSED ANGLE ---
+    // Group.rotation.z rotates local +Y axis in XY plane
+    // Child at local (0, L, 0) goes to world:
+    //   worldX = pvX - L*sin(angle)
+    //   worldY = pvY + L*cos(angle)
+    // For tip at target:
+    //   pvX - rodLen*sin(a) = tgX  →  sin(a) = (pvX-tgX)/rodLen = rdx/rodLen
+    //   pvY + rodLen*cos(a) = tgY  →  cos(a) = (tgY-pvY)/rodLen = rdy/rodLen
+    var closedAngle=Math.asin(rdx/rodLen);
+
+    // --- OPEN ANGLE: swing 90° to the right (away from contact) ---
+    var openAngle=closedAngle-(Math.PI*0.45);
+
+    // --- BUILD THE PIVOT GROUP ---
+    var ePivot=new THREE.Group();
+    ePivot.position.set(pvX,pvY,0);
+
+    // Pivot bearing housing
+    var pvBoss=addMesh(ePivot,new THREE.CylinderGeometry(0.16,0.16,0.24,14),earthGrD,0,0,0,'erth');
+    pvBoss.rotation.x=Math.PI/2;
+    // Pivot pin (metallic)
+    var pvPin=addMesh(ePivot,new THREE.CylinderGeometry(0.055,0.055,0.3,10),galvD,0,0,0,'erth');
+    pvPin.rotation.x=Math.PI/2;
+
+    // Main earth rod — thick green bar
+    // Rod centre is at local (0, rodLen/2, 0), extends from (0,0.1,0) to (0,rodLen-0.1,0)
+    addMesh(ePivot,new THREE.CylinderGeometry(0.09,0.09,rodLen-0.3,14),earthRod,0,rodLen/2,0,'erth');
+
+    // Rod tip — wider paddle that seats INTO the fixed contact slot
+    addMesh(ePivot,new THREE.BoxGeometry(0.22,0.32,0.2),earthGr,0,rodLen-0.06,0,'erth');
+    // Contact face at very tip (matches fixed contact plate width)
+    addMesh(ePivot,new THREE.BoxGeometry(0.24,0.08,0.24),earthRod,0,rodLen+0.1,0,'erth');
+
+    // Cross-arm reinforcement
+    addMesh(ePivot,new THREE.BoxGeometry(0.38,0.08,0.08),earthGr,0,rodLen-0.5,0,'erth');
+
+    // Guide tube near pivot
+    addMesh(ePivot,new THREE.CylinderGeometry(0.06,0.06,0.6,10),earthGrD,0,0.4,0,'erth');
+
+    // Store angles
+    ePivot._closedAngle=closedAngle;
+    ePivot._openAngle=openAngle;
+
+    earthPivots.push(ePivot);
+    poleG.add(ePivot);
+
+    if(pi===1) anchors['erth']=new THREE.Vector3(ph.px+2,bladeY-2,0);
+
+    // ===== ISOLATOR MB BOX (cream, per phase) =====
+    addMesh(poleG,new THREE.BoxGeometry(1.2,1.5,0.9),mechWhite,-1.8,mbY,0.9,'mbox');
+    // Door
+    addMesh(poleG,new THREE.BoxGeometry(1.0,1.3,0.03),mechDoor,-1.8,mbY,1.36,'mbox');
+    // Handle
+    var hdl=addMesh(poleG,new THREE.CylinderGeometry(0.028,0.028,0.22,8),galvD,-1.48,mbY,1.38,'mbox');
+    hdl.rotation.x=Math.PI/2;
+    // Phase color plate
+    var phCol=new THREE.MeshStandardMaterial({color:ph.col,metalness:0.1,roughness:0.5});
+    addMesh(poleG,new THREE.BoxGeometry(0.42,0.22,0.035),phCol,-1.8,mbY+0.48,1.37,'mbox');
+    // Name plate
+    addMesh(poleG,new THREE.BoxGeometry(0.92,0.18,0.03),new THREE.MeshStandardMaterial({color:0xffffff,metalness:0.05,roughness:0.8}),-1.8,mbY+0.22,1.37,'mbox');
+    // Status LED
+    addMesh(poleG,new THREE.BoxGeometry(0.1,0.1,0.04),new THREE.MeshStandardMaterial({color:0x44CC55,metalness:0.1,roughness:0.5,emissive:0x22AA33,emissiveIntensity:0.5}),-2.18,mbY+0.55,1.37,'mbox');
+    // Motor housing
+    var mot=addMesh(poleG,new THREE.CylinderGeometry(0.2,0.2,0.42,12),galvD,-2.42,mbY+0.3,0.9,'mbox');
+    mot.rotation.z=Math.PI/2;
+
+    // ===== EARTH MB BOX (green, same size, per phase) =====
+    addMesh(poleG,new THREE.BoxGeometry(1.2,1.5,0.9),earthGr,1.8,mbY,0.9,'erth');
+    // Door
+    addMesh(poleG,new THREE.BoxGeometry(1.0,1.3,0.03),earthGrD,1.8,mbY,1.36,'erth');
+    // Handle
+    var ehdl=addMesh(poleG,new THREE.CylinderGeometry(0.028,0.028,0.22,8),galvD,2.12,mbY,1.38,'erth');
+    ehdl.rotation.x=Math.PI/2;
+    // Phase color plate
+    addMesh(poleG,new THREE.BoxGeometry(0.42,0.22,0.035),phCol.clone(),1.8,mbY+0.48,1.37,'erth');
+    // Earth symbol
+    addMesh(poleG,new THREE.BoxGeometry(0.16,0.16,0.04),yellowWarn,2.18,mbY+0.55,1.37,'erth');
+    // Name plate
+    addMesh(poleG,new THREE.BoxGeometry(0.92,0.18,0.03),new THREE.MeshStandardMaterial({color:0xffffff,metalness:0.05,roughness:0.8}),1.8,mbY+0.22,1.37,'erth');
+
+    // ===== OPERATING PIPE (MB box → base of centre insulator) =====
+    // Horizontal from MB exit
+    var ph1=addMesh(poleG,new THREE.CylinderGeometry(0.038,0.038,1.6,8),pipeM,-1.0,1.3,0.6,'pipe');
+    ph1.rotation.z=Math.PI/2;
+    // Vertical up to insulator base
+    addMesh(poleG,new THREE.CylinderGeometry(0.038,0.038,3.0,8),pipeM,0,2.9,0.6,'pipe');
+    // Crank at insulator base
+    addMesh(poleG,new THREE.BoxGeometry(0.32,0.1,0.1),galvD,0,LH+0.1,0.6,'pipe');
+    // Bracket at MB exit
+    addMesh(poleG,new THREE.BoxGeometry(0.14,0.35,0.14),galv,-1.15,1.3,0.65,'pipe');
+
+    // Earth operating pipe from green MB box UP to earth rod pivot
+    // Vertical green pipe alongside right insulator from MB box top to pivot
+    var epVLen=pvY-(mbY+0.75);
+    addMesh(poleG,new THREE.CylinderGeometry(0.04,0.04,epVLen+0.5,8),earthGrD,pvX,mbY+0.75+(epVLen+0.5)/2,0.15,'erth');
+    // Horizontal pipe from MB box to vertical pipe
+    var epH=addMesh(poleG,new THREE.CylinderGeometry(0.035,0.035,0.5,8),earthGrD,1.8,mbY+0.75,0.5,'erth');
+    epH.rotation.x=Math.PI/2;
+    // Crank lever at pivot point
+    addMesh(poleG,new THREE.BoxGeometry(0.25,0.08,0.08),earthGr,pvX,pvY,0.15,'erth');
+
+    if(pi===0) anchors['mbox']=new THREE.Vector3(ph.px-1.8,mbY,0.9);
+    if(pi===1) anchors['pipe']=new THREE.Vector3(ph.px,2.9,0.6);
+
+    // ===== INTER-PHASE LINKAGE RODS =====
+    if(pi<2){
+      // Main linkage
+      var lr=addMesh(poleG,new THREE.CylinderGeometry(0.03,0.03,SP,8),pipeM,SP/2,2.8,0.9,'pipe');
+      lr.rotation.z=Math.PI/2;
+      // Earth linkage
+      var elr=addMesh(poleG,new THREE.CylinderGeometry(0.026,0.026,SP,8),earthGrD,SP/2,1.2,0.9,'erth');
+      elr.rotation.z=Math.PI/2;
+    }
+
+    mainGroup.add(poleG);
+  });
+
+  // Set initial blade angles (OPEN = 90°)
+  bladeGroups.forEach(function(bg){
+    bg.rotation.z=bg._side*Math.PI/2;
+  });
+  // Earth pivots (CLOSED = rod pointing up to fixed contact)
+  earthPivots.forEach(function(ep){
+    ep.rotation.z=ep._closedAngle||0;
+  });
+
+  // Index all meshes by part id
+  mainGroup.traverse(function(c){
+    if(c.isMesh && c.userData && c.userData.pid){
+      if(!meshMap[c.userData.pid]) meshMap[c.userData.pid]=[];
+      meshMap[c.userData.pid].push(c);
+    }
+  });
+
+  buildUI();
+  setupInput();
+  updateSteps([]);
+  updateIlk();
+  addLog('info','Simulator ready — OPEN, Earth CLOSED');
+  addLog('info','Step 1: Open earth → then close disconnector');
+  window.addEventListener('resize',onR);
+  animate();
+}
+
+// ========== BLADE TICK ==========
+function tickBlades(){
+  var diff=tAng-bAng;
+  if(Math.abs(diff)>0.3){
+    bAng+=Math.sign(diff)*spd*0.55;
+    bAng=Math.max(0,Math.min(90,bAng));
+  }else{
+    bAng=tAng;
+    if(bSt==='closing'&&bAng===0){bSt='closed';onCE();}
+    if(bSt==='opening'&&bAng===90){bSt='open';onOE();}
+  }
+  var rad=bAng*Math.PI/180;
+  bladeGroups.forEach(function(bg){
+    bg.rotation.z=bg._side*rad;
+    var gl=bg._glow;
+    if(gl){
+      if(bSt==='closing'||bSt==='opening'){gl.material.color.setHex(0xf0b429);gl.material.opacity=0.4+Math.sin(Date.now()*0.012)*0.3;}
+      else if(bSt==='closed'){gl.material.color.setHex(0xe74c3c);gl.material.opacity=0.45;}
+      else{gl.material.color.setHex(0x2ecc71);gl.material.opacity=0.45;}
+    }
+  });
+  // Earth animation — CLOSED: rod swings UP to jaw fixed contact, OPEN: swings away
+  earthPivots.forEach(function(ep){
+    var tgt=eSt==='closed'? (ep._closedAngle||0) : (ep._openAngle||-1.57);
+    var ed=tgt-ep.rotation.z;
+    if(Math.abs(ed)>0.008) ep.rotation.z+=Math.sign(ed)*spd*0.025;
+    else ep.rotation.z=tgt;
+  });
+  updateStatus();
+}
+
+// ========== OPERATIONS ==========
+function doClose(){
+  if(bSt!=='open')return;
+  if(eSt==='closed'){addLog('err','⛔ BLOCKED — Open earth first');shake('bC');return;}
+  bSt='closing';tAng=0;$('bC').disabled=$('bO').disabled=$('bE').disabled=true;
+  addLog('info','▶ CLOSE initiated');updateSteps(CS);setStep(0);
+  D(function(){setStep(1);},600);D(function(){setStep(2);},1200);
+  D(function(){setStep(3);addLog('warn','⚙ Blades rotating…');},1800);
+}
+function onCE(){setStep(4);addLog('ok','✓ CLOSED');D(function(){setStep(5);addLog('warn','⚡ ENERGIZED');$('bO').disabled=false;$('bC').disabled=true;updateIlk();},400);}
+function doOpen(){
+  if(bSt!=='closed')return;
+  bSt='opening';tAng=90;$('bC').disabled=$('bO').disabled=$('bE').disabled=true;
+  addLog('info','▶ OPEN initiated');updateSteps(OS);setStep(0);
+  D(function(){setStep(1);addLog('warn','⚙ Blades rotating…');},600);
+}
+function onOE(){setStep(2);addLog('ok','✓ OPEN — 90°');D(function(){setStep(3);addLog('ok','✓ DE-ENERGIZED');D(function(){setStep(4);D(function(){setStep(5);$('bC').disabled=false;$('bO').disabled=true;$('bE').disabled=false;updateIlk();},300);},300);},400);}
+function doEarth(){
+  if(bSt==='closed'||bSt==='closing'||bSt==='opening'){addLog('err','⛔ INTERLOCK — Blades must be OPEN');shake('bE');return;}
+  if(eSt==='closed'){eSt='open';addLog('ok','⏚ Earth OPENED');$('eL').textContent='⏚ CLOSE EARTH';$('bC').disabled=false;}
+  else{eSt='closed';addLog('ok','⏚ Earth CLOSED');$('eL').textContent='⏚ OPEN EARTH';$('bC').disabled=true;}
+  updateIlk();
+}
+function doReset(){
+  bSt='open';eSt='closed';bAng=90;tAng=90;
+  bladeGroups.forEach(function(bg){bg.rotation.z=bg._side*Math.PI/2;});
+  earthPivots.forEach(function(ep){ep.rotation.z=ep._closedAngle||0;});
+  $('bC').disabled=true;$('bO').disabled=true;$('bE').disabled=false;$('eL').textContent='⏚ OPEN EARTH';
+  updateSteps([]);updateIlk();$('log').innerHTML='';
+  addLog('info','↺ RESET — Open earth first, then close');
+}
+function $(id){return document.getElementById(id);}
+function D(fn,ms){setTimeout(fn,ms/spd);}
+function shake(id){var e=$(id);e.style.animation='shake .4s';setTimeout(function(){e.style.animation='';},400);}
+
+// ========== STATUS ==========
+function updateStatus(){
+  var a=Math.round(bAng);$('sA').textContent=a+'°';
+  if(bSt==='open'){$('sB').textContent='OPEN';$('sB').className='sv open';$('sL').textContent='DE-ENERGIZED';$('sL').className='sv safe';$('f3b').textContent='● OPEN — '+a+'°';$('f3b').className='f3 op';}
+  else if(bSt==='closed'){$('sB').textContent='CLOSED';$('sB').className='sv closed';$('sL').textContent='ENERGIZED';$('sL').className='sv energized';$('f3b').textContent='● CLOSED';$('f3b').className='f3 cl';}
+  else if(bSt==='closing'){$('sB').textContent='CLOSING…';$('sB').className='sv moving';$('sL').textContent='SWITCHING';$('sL').className='sv moving';$('f3b').textContent='⟳ '+a+'°';$('f3b').className='f3 mv';}
+  else{$('sB').textContent='OPENING…';$('sB').className='sv moving';$('sL').textContent='SWITCHING';$('sL').className='sv moving';$('f3b').textContent='⟳ '+a+'°';$('f3b').className='f3 mv';}
+  if(eSt==='closed'){$('sE').textContent='CLOSED';$('sE').className='sv locked';$('f3e').textContent='⏚ EARTH CLOSED';$('f3e').className='f3 cl';}
+  else{$('sE').textContent='OPEN';$('sE').className='sv unlocked';$('f3e').textContent='⏚ EARTH OPEN';$('f3e').className='f3 op';}
+  if(bSt==='closed'){$('sK').textContent='LIVE';$('sK').className='sv closed';}
+  else if(eSt==='closed'){$('sK').textContent='GROUNDED';$('sK').className='sv safe';}
+  else{$('sK').textContent='READY';$('sK').className='sv unlocked';}
+}
+function updateSteps(s){var el=$('stps');if(!s.length){el.innerHTML='<div style="font-size:9px;color:var(--dim)">Press CLOSE or OPEN to begin.</div>';return;}el.innerHTML=s.map(function(t,i){return '<div class="si" id="s'+i+'"><div class="sn">'+(i+1)+'</div><div class="st">'+t+'</div></div>';}).join('');}
+function setStep(i){document.querySelectorAll('.si').forEach(function(e,j){e.classList.remove('act','dn');if(j<i)e.classList.add('dn');if(j===i)e.classList.add('act');});}
+function updateIlk(){var cc=bSt==='open'&&eSt==='open',ce=bSt==='open';$('ilk').innerHTML='<div class="ib '+(cc?'ok':'wn')+'">'+(cc?'✓ CLOSE permitted':'⚠ CLOSE blocked — open earth')+'</div><div class="ib '+(ce?'ok':'wn')+'" style="margin-top:3px">'+(ce?'✓ Earth operable':'⚠ Earth LOCKED')+'</div>';}
+function addLog(t,m){var b=$('log');var n=new Date();var ts=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');var e=document.createElement('div');e.className='le '+t;e.innerHTML='<span class="lt">'+ts+'</span><span class="lm">'+m+'</span>';b.appendChild(e);b.scrollTop=b.scrollHeight;}
+$('spd').addEventListener('input',function(e){spd=parseFloat(e.target.value);$('spv').textContent=spd.toFixed(1)+'×';});
+
+// ========== PARTS NAV ==========
+function buildUI(){
+  var n=$('pN');
+  PD.forEach(function(p){
+    var b=document.createElement('button');b.className='pb';b.textContent=p.name;b.dataset.id=p.id;
+    b.addEventListener('click',function(){selPart(p.id);});
+    n.appendChild(b);
+  });
+}
+function selPart(id){
+  if(selP===id){clInfo();return;}
+  if(selP)rstHL(selP);selP=id;hlP(id);
+  document.querySelectorAll('.pb').forEach(function(b){b.classList.toggle('at',b.dataset.id===id);});
+  var p=PD.find(function(x){return x.id===id;});
+  $('iPn').textContent='PART '+p.n;$('iPt').textContent=p.name;
+  var h='';for(var k in p.d)h+='<div class="sr"><span class="sk">'+k+'</span><span class="svl">'+p.d[k]+'</span></div>';
+  h+='<div style="margin-top:5px;padding:5px 7px;background:rgba(0,187,238,.04);border-radius:4px;font-size:9px;line-height:1.5;color:var(--dim)">'+p.ds+'</div>';
+  $('iPb').innerHTML=h;$('iP').classList.add('open');
+}
+function clInfo(){if(selP)rstHL(selP);selP=null;$('iP').classList.remove('open');document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('at');});}
+function hlP(id){var ms=meshMap[id];if(!ms)return;ms.forEach(function(m){m._oc=m.material.color.getHex();m._oe=m.material.emissive?m.material.emissive.getHex():0;m.material=m.material.clone();m.material.emissive=new THREE.Color(0x00bbee);m.material.emissiveIntensity=0.5;});}
+function rstHL(id){var ms=meshMap[id];if(!ms)return;ms.forEach(function(m){if(m._oc!==undefined){m.material.color.setHex(m._oc);m.material.emissive=new THREE.Color(m._oe||0);m.material.emissiveIntensity=0;}});}
+
+// ========== INPUT ==========
+function setupInput(){
+  var cv=ren.domElement;
+  cv.addEventListener('mousedown',function(e){mdn=true;pvx=e.clientX;pvy=e.clientY;autoRot=false;});
+  window.addEventListener('mousemove',function(e){if(!mdn)return;trY+=(e.clientX-pvx)*0.007;trX=Math.max(-0.3,Math.min(0.5,trX-(e.clientY-pvy)*0.004));pvx=e.clientX;pvy=e.clientY;});
+  window.addEventListener('mouseup',function(){mdn=false;setTimeout(function(){if(!mdn)autoRot=true;},4000);});
+  cv.addEventListener('touchstart',function(e){mdn=true;pvx=e.touches[0].clientX;pvy=e.touches[0].clientY;autoRot=false;},{passive:true});
+  cv.addEventListener('touchmove',function(e){e.preventDefault();if(!mdn)return;trY+=(e.touches[0].clientX-pvx)*0.007;trX=Math.max(-0.3,Math.min(0.5,trX-(e.touches[0].clientY-pvy)*0.004));pvx=e.touches[0].clientX;pvy=e.touches[0].clientY;},{passive:false});
+  cv.addEventListener('touchend',function(){mdn=false;setTimeout(function(){if(!mdn)autoRot=true;},4000);});
+  cv.addEventListener('wheel',function(e){e.preventDefault();tgtD=Math.max(16,Math.min(55,tgtD+e.deltaY*0.018));},{passive:false});
+  cv.addEventListener('click',function(e){
+    var r=cv.getBoundingClientRect();
+    var mouse=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+    var rc=new THREE.Raycaster();rc.setFromCamera(mouse,cam);
+    var hits=rc.intersectObjects(mainGroup.children,true);
+    if(hits.length>0&&hits[0].object.userData&&hits[0].object.userData.pid) selPart(hits[0].object.userData.pid);
+  });
+}
+
+// ========== 3D LABELS ==========
+function proj3d(worldVec,el){
+  var v=worldVec.clone();
+  mainGroup.localToWorld(v);
+  var p=v.clone().project(cam);
+  var x=(p.x*0.5+0.5)*innerWidth;
+  var y=(-p.y*0.5+0.5)*innerHeight;
+  el.style.left=x+'px';
+  el.style.top=y+'px';
+  el.style.transform='translateX(-50%)';
+  el.style.display=p.z<1?'block':'none';
+}
+
+// ========== ANIMATE ==========
+function animate(){
+  requestAnimationFrame(animate);
+  if(autoRot) trY+=0.001;
+
+  crY+=(trY-crY)*0.05;
+  crX+=(trX-crX)*0.05;
+  camD+=(tgtD-camD)*0.06;
+
+  cam.position.x=Math.sin(crY)*Math.cos(crX)*camD;
+  cam.position.y=6+Math.sin(crX)*14;
+  cam.position.z=Math.cos(crY)*Math.cos(crX)*camD;
+  cam.lookAt(0,5,0);
+
+  tickBlades();
+
+  // 3D labels
+  proj3d(new THREE.Vector3(0,11.5,0),$('f3b'));
+  proj3d(new THREE.Vector3(SP+2.5,7.5,0),$('f3e'));
+  proj3d(new THREE.Vector3(-SP,-0.2,1.5),$('phR'));
+  proj3d(new THREE.Vector3(0,-0.2,1.5),$('phY'));
+  proj3d(new THREE.Vector3(SP,-0.2,1.5),$('phB'));
+
+  ren.render(scene,cam);
+}
+
+function onR(){
+  cam.aspect=innerWidth/innerHeight;
+  cam.updateProjectionMatrix();
+  ren.setSize(innerWidth,innerHeight);
+}
+
+// Shake CSS
+var sty=document.createElement('style');
+sty.textContent='@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}';
+document.head.appendChild(sty);
+
+init();
+</script>
+</body>
+</html>

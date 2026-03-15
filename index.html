@@ -1,1 +1,2862 @@
-<h1>hello</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMART Purchase Requisition</title>
+<style>
+/* SMART PR - PowerGrid Inspired Design */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1400px;
+  background: #fff;
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.hidden { display: none !important; }
+
+/* Login Screen */
+.login-form { max-width: 450px; }
+.logo { 
+  font-size: 60px; 
+  text-align: center; 
+  margin-bottom: 30px;
+  padding: 10px 0;
+}
+
+.logo img {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+}
+
+.logo img:hover {
+  transform: scale(1.03);
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.2));
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 3px solid #003366;
+}
+
+.header h1 {
+  color: #003366;
+  font-size: 28px;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.demo-info {
+  background: linear-gradient(135deg, #e7f3ff 0%, #f0f8ff 100%);
+  padding: 12px 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+  border-left: 4px solid #003366;
+  font-size: 13px;
+  color: #003366;
+  box-shadow: 0 2px 6px rgba(0,51,102,0.1);
+}
+
+/* Form Elements */
+.form-group { margin-bottom: 15px; }
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group label.optional::after {
+  content: " (Optional)";
+  color: #666;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: all 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #003366;
+  box-shadow: 0 0 0 3px rgba(0,51,102,0.1);
+}
+
+input:read-only {
+  background: #f8f9fa;
+  cursor: not-allowed;
+}
+
+/* Search Results */
+.search-dropdown-container { position: relative; }
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 2px solid #003366;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.search-result-item {
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.search-result-item:hover { background: #f0f7ff; }
+
+.search-result-item.add-new-option {
+  background: #fff3cd;
+  border: 2px dashed #856404;
+  color: #856404;
+  font-weight: 700;
+}
+
+.search-result-item.add-new-option:hover {
+  background: #ffe8a1;
+}
+
+.result-code { font-weight: 700; color: #003366; font-size: 12px; margin-bottom: 4px; }
+.result-name { font-size: 14px; color: #333; margin: 4px 0; }
+.result-details { font-size: 11px; color: #666; }
+
+/* Buttons */
+.btn {
+  background: #003366;
+  color: #fff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn:hover {
+  background: #004d99;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,51,102,0.3);
+}
+
+.btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-small { padding: 6px 12px; font-size: 12px; }
+.btn-secondary { background: #6c757d; }
+.btn-secondary:hover { background: #5a6268; }
+.btn-success { background: #28a745; }
+.btn-success:hover { background: #218838; }
+.btn-danger { background: #dc3545; }
+.btn-danger:hover { background: #c82333; }
+
+.logout-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* User Info */
+.user-info {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.user-info .info-item { display: flex; align-items: center; }
+.user-info .label { font-weight: 600; color: #003366; margin-right: 8px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.tab-button:hover { color: #003366; }
+.tab-button.active { color: #003366; border-bottom-color: #003366; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Sub Tabs */
+.subtabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.subtab-button {
+  background: #f8f9fa;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.subtab-button:hover { background: #e2e3e5; }
+.subtab-button.active { background: #003366; color: #fff; }
+.subtab-content { display: none; }
+.subtab-content.active { display: block; }
+
+/* Item Detail Box */
+.item-detail-box {
+  background: #e7f3ff;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border-left: 4px solid #003366;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.detail-item {
+  background: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #003366;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  color: #333;
+  font-size: 14px;
+  word-break: break-word;
+}
+
+/* Price Variance Display */
+.price-variance {
+  background: #fff;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+  border: 2px solid #ddd;
+}
+
+.price-variance.positive {
+  border-color: #28a745;
+  background: #d4edda;
+}
+
+.price-variance.negative {
+  border-color: #dc3545;
+  background: #f8d7da;
+}
+
+.price-variance.warning {
+  border-color: #ffc107;
+  background: #fff3cd;
+}
+
+.variance-label {
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.variance-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th {
+  background: #003366;
+  color: #fff;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+tr:hover { background: #f8f9fa; }
+
+/* PR Status Box */
+.pr-status {
+  background: #e7f3ff;
+  padding: 15px;
+  border-left: 4px solid #003366;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.pr-status .pr-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #003366;
+}
+
+/* Vendor Details Card */
+.vendor-details-card {
+  background: #fff;
+  border: 2px solid #003366;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.vendor-header {
+  font-size: 20px;
+  font-weight: 700;
+  color: #003366;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #eee;
+}
+
+.vendor-section {
+  margin-bottom: 15px;
+}
+
+.vendor-section h4 {
+  color: #003366;
+  font-size: 14px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.vendor-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.vendor-info-item {
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.vendor-info-item strong {
+  display: block;
+  color: #003366;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* Filter Section */
+.filter-section {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+/* Cards */
+.pr-card {
+  background: #fff;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: all 0.3s;
+}
+
+.pr-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-color: #003366;
+}
+
+.pr-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-approved { background: #d1f4e0; color: #107e3e; }
+.badge-pending { background: #fff4e6; color: #e9730c; }
+.badge-rejected { background: #ffe6e6; color: #bb0000; }
+.badge-draft { background: #e2e3e5; color: #6c757d; }
+.badge-purchased { background: #d1f4e0; color: #107e3e; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 2px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  color: #003366;
+  font-size: 20px;
+}
+
+.modal-close {
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #003366;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 20px;
+  border-top: 2px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Loading Indicator */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #003366;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-message {
+  color: #666;
+  font-style: italic;
+  padding: 15px;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.search-materials-table {
+  margin-top: 15px;
+  border: 2px solid #003366;
+}
+
+.search-materials-table th {
+  background: #003366;
+}
+
+.search-materials-table .select-material-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.no-materials-message {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-style: italic;
+  background: #f8f9fa;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.materials-found-message {
+  background: #d4edda;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 15px 0;
+  border-left: 4px solid #28a745;
+  color: #155724;
+  font-weight: 600;
+}
+
+.badge-pac {
+  background: #007bff;
+  color: white;
+}
+
+.badge-generic {
+  background: #6c757d;
+  color: white;
+}
+
+.admin-only {
+  background: #ff9800;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  margin-left: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container { padding: 15px; }
+  .detail-grid, .filter-grid, .vendor-info-grid { grid-template-columns: 1fr; }
+  .logout-btn { position: static; width: 100%; margin-bottom: 15px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="container login-form" id="loginDiv">
+  <div class="logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAADvCAMAAAA9+ECmAAAA5FBMVEX///8pV6QAqFldgLrJ1ejtMje/6dU/vYKTqtGrvdvr7/c4Y6r4+vzn7PXx9Pl/06vr+PILq2Db8+eFn8uS2rikuNgwXKem4cVzkcNLcrKQ2bY0YKmcstX0+/g9Z6xVebfE0eZJcLJ9mci4x+Fpib8esmxvzqHb4/DU3e2xwt6LpM5si8Cx5MwwuHib3b7P7+BgyZfT8OJRw41pzJ05u34ntXLk9u31jI7ycnX71NXwW1/tOj/94uL5tbb0goX2mJrvTlP6xcb5ubr3pajzeHzxY2f94eL1iYz+7/D4rK7uRUnwVlq/PT+DAAAgAElEQVR4nO1dCVvbuBZNmgQCYU8DCQTIBgn7WtpOp9O903b+//95sSXZsnWvNkt24Pl8MxQSy5ZtHenuqlQKxLTIi5cosZCYtaNfLwrsRokSi4nmKPr1aL3AfpQosZA47ka/HvUL7EeJEouIWTVcQf7+Nf8xPC64MyVKLBq6hCDv/57/6FVLGatECR4b1WqopH/5Of9xXC1lrBIleHSq1fPg3y/v5z9q1V7B3SlRYrFwXK02g3+/BgS5qFZnBfenhEds7dwsBdi73t+EsX+9d3m5dLPztFV0XxcE02qViFUfv1QCfYQsJyVeErYuN+8fT14ZY/vkzdXy/e3DnDWXS3cvizGzuibmlKiuBC1+f53/aFerR805+gSdACsBzgKMCQYE9Y2C77GEBm727y2oAfNlefPyhbBkVquaYBy0+RYQ5NykWau/VvB9lpDibv9+2xE5IlydLhV9W5kxmxjRo1qtB62+fZz/6Js1POoUfKslUCydulo50th+2Cn65rJgo21Ij2o1DFH89LsSmrRKirwALD04XzoSuH+2y8hGezcavMOaJsKWn77Nfwz0GhxzFBkOCrzdEhAur7yyI8Tj86RI/yAauL2xWdO33wwOnrbjC1UnZZD8ImHp0T89nilFBkNrelQq/3wyOnyt34op0i0DVBYFhw/50CPA7fOyaa3HuvnwzLy5IUECihxFFzxYMb9gCQ9Y8qWZgzjZK/p+DdDfzUKPSuX7W4trxoLWcemBXwBc50mPAKdF37EuZr2IHpaT+fd/LBptjGI5a1R6RYrGZt78ePVq+bDom9bCapcZmIzo0R9N5k0G4e/vCEFC97qBSrE+q9dXRsGVz43VnhJusZ8/P169unoeDLFCnarY4R/vvof/ELtUkb0qYYnLIvjx6tV90fftD1SrJ5UafrwL/yEflVap54cdv75BHJtF37kvzKo8Qf76Ef5DPmoW2a8SVtB3f2y/WZbhMfzxRp9vz88hooeLKi9i/UcIQuxSrSL7VcIGr+WD+GT5YXNvycxxcXe5/7D8Rk2QkwX2h3R0w0kAROan8EyfP4f/UF/jsf1pu2UYfBGQOEC2Hy6fMpz57nLzVu5euXV2F65hFJ6OgaRI/fkT/nOsPl6FXqnB5A98ATl57cLOtHQrE7kWNbz3Qj1aNUDqNPxphP90HZzwqAzOyh1YfOLJtbNLLN2iBHlwdhGX2HAw2wcgrpMPjaAwlps16WBQ5HP5f8QTMnIfnaoHT/cYQxZRC1kfktF4PNBNr0WwGp6u0QgKY1XGGZSaOVh4llW0SwlrIBKWcz83Fsvibp1yhjqNg5o4ivBoNN47OMsqW9VKQ3GugKUfD+alJVgVWXZ+oayY0djEkfpQLfxqNL64OM8aiynulqFZOQJWQS49XAlZQxYt4GRA1w9nhRDnBPno5kxMiynjVXIEvIB4uRTskLzxci1rnJExuOsuPnBOkN+OTrVCGVIrHSJ5YQsctH5sS3vgtV57uZYtaPGRlsMcjL8bDdOMKRRseTsuGZITdsBB60lzBrWQxTL0JsxPVjg7P2+PRt3uxWRCajb8bDT+DX9ZZ8atDOybUp96mUSVE5ZAgvhQQSqIQWDxtPRMWItrn1Sr4SdzgpB49yb7eLec/58NYIJ4CiIE1fQrP9cqCivVNEHeNxok3j0iSLUsefVsAKeCeCIIyEY/BoHCcAwR5K/wl7i4Yrnb1LMBrDh7ErHuXj5BplWBIF8aDRKtyC0uZdDhcwFMEE9KOhjWsigEGTSb5wHaAUYhugEuLubq9hxEOz4O0ZtjGOAoQKvVOjjY3d2tCghPPCcIiVYciAfM9ZE5DnYP5miFOIoxpOhRHHMIO9OW3Q+GnSUQl+bY08e1Hl4j2NcDsjFHJsAxUifBfh+X8JPMAFCeO3F+GQTycTODRm9WRAT55ecSNs7MAupzlHgOkK9Uqy31cDRHeOqvDRqtuO7+AoOSICUcQUqQNUfx7SlEBAmjFdfcX+DAXJkpCVIChJQgYn5UrBtQ5YDXDiL1IFYQEhoC1RGIo/Bjg0UrHgBDPCN6xoGLJUFKgJARhHoo/JTB/T0nyNfwt1l9kMCYxxnDCkMnQp9Hk4BGLnZNu1MSpAQICUGoeclVfHsKAUFcRSvyoAwxVdRLgpQAgRNknYg+vrx33xoOoxV50OIpdbNWJUFKgEAJQhX0owwBilIEBLGo767GKsnCbZkp6iVBSoBACUKrjXiLj/00J4hNfXc1aO6j2dJXEqQECIwgY8IPN7UQ+E3UGeMCgrxzcnYBYwtFvSRICRAYQcj2Bi4qIdRTzpRdUsQqIAiJVqwkypS4yFnszNWnVs1on7ZrVidW8qy2CU5CvAlxNcfjHMtIk8fHq6v5YUGDbUkhNGnpWi1g/ZZXxY2K42pUxt1+dHOxEJJdP6PLBI9O+tS8IHrF4ct9fPRfS/6omgKhwNs5QT6TIxLf1pxcdGabWwLnkiozoA+Rp506DNkwIH2Yu36/2tc/xd2+pN5noqI6djGDYMU99FpC8BMcGJmxuiJcAbiIkqZnghePEOTfOUE+kEOSXxcb0ou8+ztFs5dAkDmu0WG7zRfbdUCQyhZWE+4kXdbXC0HgRbCIPN6JQJBB+Pk/DRbOm3KlO6ubYgVkpKtexsISxLC2wSFayvDR+cWw/anSuYJeCALLxLoEyVg5kQcQzE48FCFBwnDeyjDx9ZD6xBN+8th9HnnUmYs94XgfJ3zydUNnSOXlEcRsBalgFeGSZ3LExktEv0gJOl4IAk8EmgQZi4PaJYiS/j0gyM/wVz8hkSGMrQzISFdV8385BEGGziu+HK4jglRuEIYkO+2FIPA8oLeH7pqgVrsF0Z9DgpDioy4KvGMw9eMgI11VUlOTIHCtg8UiyBamh8R6uiuCoLscJhT1rAQ5fLoT06DgaUCPIE31sMsEcpV3jSict+3xYsaRMvDLeLYEsaivhtWLfqO8mHnK7QN8okSNXzuCPF1eb95r7FaVgN7uhywwtjmaZKu8DoP670KCkHDevnqcW+KoVjNdQuAnp6oE658gO0vXm6e396GH4PZ0fykl9DkkCHaqeJZwd7FDZLnivQ8WBNna199AkccibQ/6oxGF867aWgBm6+5LacFPrlCC7Ow9AI617ceH10tRvxwSBNVCoqIlOSxXnJBlSpDDPcxtq8TCEcRLOG82wE+uOIIsybfru9okLhqXBMHCbqJzubwYcnecrdeMIIf7GXzvC0cQL+G82QA/uYJ0kLtT+WaWIZaD2dblmMVGZDR8XF4M2+swrrFlRJDrTKEp5iYNf/ir4S2cNxPgJ1cIQW50RYXlG6djFullbONxebFDZETHWogBQVD3vCYWjiCewnmzAH5fjvwgJgTZMXnZt3C5dbsxe4OcK3KjuSQI6pmMDtAnyJOp1crJDWQArFqT7/4LCPIj5w5pACaIyuaODJkMBDk1e7WYZOGSIJGH2ylBlGq6NkGeNORROXImyBS2vZIvPzficN6V2mQyueh2u6PRqN0+P28WuCUnPNJUZZldE+Qu61zIYCM0YO47PwTB9suNeq5LkMPszyznrUHhHZ575MuQIKQ6r+ia3M23ozxggqjKMiNv2ZYgWByfOVxasZQiFjK+Dg+XrsOCpQ/3qbSQ08AEh8z7ER11CWJt3FXegC/AISt0K8E/jTicV/QUutvqzRQwQVRPDlEBLAliKF7JYLGCYGqzpZL+JLubYGVGBnYUPqxJEOwwE+yZP60MqMMSFi0jRAhCwnk7wkHGda2cAZ7PVEE6YIV+W4I45IfNCoLG8yrNvOI0onLaBcYPJNwkimzRJAimgGxrpzkuL6sk6RmsVVtCrMsYggbYEoKE1XmB8OEDpz0xCXuHn/OjohWi11oRxGl6vDFBdvBs2Gj8664gWyjXKLYl9xs9FD2CYEdtq3LdDOChjDROkA+NOJzXSw35BPRFNpgg2wpXumYcuw5BMBXZDoYEuZEN6WhEahJE7bQL/eWYq5CdRo8g2ErlclMfWKl2jQRBSDivf2b2tB8CslIrpFPkJacJorHQPLmtUmCggzwt7UtqKehE8yYIcqNhVAq9gRgB2Im0CII4ol45rbngZa8DAZQgIT8aH8kf/q+qbTjWCC8FgEy8FgRxYIvhQccssj9QgOv90L50pSRmrGHo6CBYumACoVaDEYBFL2gRBPP+u/SNz3wEt4ugQ5UQ5Bv548L7VbUrDGO6ntRVuIWMBnOCKASsk8fl5cc3J/qrDCWIA72fKxClsYJgAzaJkFGYp9CIINhzy9lw6w6/CEEWL5wXEwykFWEwvdqcIJIFZPs0NrIcLr1+0Ep5cEcQTshUryA7ehQObwjTQYwIgh1URJ0SJ6AE+bfofghAJWdZfg42HIwJgpiLA9wLAZOHlw/KceiMIDpVTWKCSJWZGGGIGza7MLtIJhFLWbBpUUEJ8r3ofghAX61EC0Es+RYEwY1IiKywpxiKzgjCl85TiliY1JTCtvSeo1tEvk8QBAvWfHWiqvm3oKAEWbxoRXzAoQZD3IdrTBD9eoPx1aXWIlcESRiolCuIZlQUyYrCpErV400u6fhVnqca8jchyF9F90MAThDM5XSHyzmmBMEC9+SpbjLPoiOCJCMJVATR09DZoow8vsgooEcQmQPnann5lmxfvb9HTHc3N3d3OztPT1tbh6pkUT9YVzm1KUFotOIadGAxNUglIss2uFrL7JmmBMHGQrrYYAo7+IzthiAp8VJFEHSwbt+/vkmn1mCTQnTPegTRJSWEW1WIiXvUcI8EOeAnIQiNVtyADhzm3usAMpl+G3iQ0sDbNEFUIVvYOFYG0aHGLycESVvwVARB+HoCCqmYgTYipWYslqZdAMZVznLYqsRlR454TwlCohVhT+Eg304TyB11p8kFeWtTbkYyJQiSRCjfzD4AmgvhgiCCfKdS0uGHsg2nZWLLTXRVTYJkWULmONnPU9YSw3MjHJAjGEFItCIcGX+RY48jKDx127eXxNz6dLO3r/R6mxIEmQWX7budnSDb4vKlWEGQsA/EJYFNMdFyo5sPgtoSNQEvcH4gqbZ7RI5gBHkva+Brf0QpXOXyBTAlCHJtHW8X0jQzQW6BehWKFQT5GpYTURPgluoIIaPQrlgchwd8EdlwGlwuq35NNQtGEFJbEdgkISRTrduUo99ZGY8Hsr7MTFmmacPXgqMVRKdcEzJ/ZiTIG1B9VawgyNfwBI3NR7FjUjsnfSvz3HaFFufwXY83Bo2r/UIJQrdK91m/OoJmnV6HS4gpQRCZTaemMtKUEuQ13dTMrPvLiNChWEEQEQs8GTodxY4Xg6ommas2oG5FidXJzyhlBKHBWD7rV8fQW0wcJmSkCaLKzEUUVo2YbWygpVI0UEeLiJNTNEpDpaTD30IiFh7cH0t2BnWxdjIzBHF2reUyPkPQPQgZQWgwVj6pKAPsjSfhLuLclCBYcp3SwIJ6HtIJU3pBhNvL+7IYJjsrFrQOoksaZ5cwqayYtXLcXKgEnzUf6T5J4SJCN4nRKCjTw6PdDv6Pcc6Dag002v1rIxGMteI93j2AZlIIGtdjDFOCYIGtCj/IktJRGAEZkSyEfvvk6vH2WhXgZ+cHORGGnmQ4c3dsVps3c0EY/9vaaoERZPGCsSoOq+6YEgSjptQRIi3BmE4Ygpcaww1KVCsI0qG0v/ESF4jecIcZVndfyuQxfJV3aRMMjCCLF4wVILPBkMKUIKiBALdjIXslMaRXEJj7Go4WHqoVBAsOu+dtYksySZYfpMb7gygeiQriSlcEGEE+F90RENnNIQTGBEHjDmGGbO2rTG5pgsD+ZkOxQkUQrHbpfPDdb15fXl7vny5LlaHEimmxgY522W8QC1HC+iMlyIeiOwID217SEGmCKAsw4glTy4IBcutaYxikCQKbYB0TJLOlPBEZZbUF287re+tXqI7syQFsBWkU3REEbmy9xisIvsdssFdOzJHDpU09MVAo+wM2e5M+Sg4lQTIqcUmJT4cgsFT0dEnKUmzesspwV6E7SCUf5BFzMkqYj7qCJYmtICxacVQT0MmhmziWXKwhxiuIyoJ2Rd6zvgQoEAT2qav2P0lCSRBs60E9JKMad7B1kifIsplYtFW5lG1NlEcie7IWXH0aeSL75PuIIDRaEXClT3LopgR3DvQQc4JkDrlLQRg48NJoFu2trmqSKV6H19C38OfBEeQJjhmTA9+rTZF+4waJgN5BpVKvwQSh0YpirMuR+w06zbBlYMtChG4LgqDblNtBWEHgwW02JDTK/mSwtXLW4ENZOgFHkMB/dGJsnsVjt3KxY/HO8ZXgg85B8CsVnCKCkNqKYnne1jSPTsqhHeJ3iRxpQZCseQ0piKVHYYnFSOzWIIhm3R8AHD+upZMFRxAylS2bVjBBA11U+yVlw1r4MzHiybKxGshRtErub0YQWltR2GzHoN60P0hcWRyu7jAq2RDE4eYgryCCwDrviYmEolN61HY3gpgflwpbWDyKo8f6YChnYaaYVAzzmctwjh5UwLRNr1TvHdBM84ggtLYiEg22u3swR6vVOiIYhujNcUzBrhvHxdBAmG4U/8KCXuJAF30oUgbn2A5cFC4JIrNkGQMoXg3fkYmvUKs2r12R+kg/VjvEY4LEU8r2qRlF9Coxw8kYLiFu9/GNEYTVVoR323GNI6PHF0CRVUszNZ0SJHvmTwyAIEhfpaUjA4sp90yQiyVVfQuGRNmLdxqTREwQnkvbp6oNV3kgFrKUwOl/bNaEnkUEYbUVcwq4t9D8D/exAXvywEaNU4K4jCcGCIJZkh/hXIjDm73925PEEqO5gY7xnuVvqBLxpNpXJEREkPQN3errIogUlxKx/A9LMVXpEyMI2wk6l5QpW9Vma+80Wf58+839wzWnyqk2gaHQJYi7Taag/UFQ+i2HZaNunipbOzeBj+1y/yF2uXCGLt0dpnbMlkJaEeNQc+mJHr94/PKenh0K00FSDHOpgsAQRayIICxacRDEwre7k4xXmnRH7XMkP7czrtcz2Y6f6I4BO8Ljd02QypKRtfdxHwt/gghiZyfjvO36exQaiFn3dMDLTVccIoJADbZ1al2hJnV1U+94ywjyueieOIGmiKW5W3QAqQsggcdwukSOBneYspLgNAgCuBtvNC0OLNBXXkg1AUYQbG7Yvr2UryOHmB1AteFeHviXEeRP0T1xAvcEkTqRuaYPVHNAJkOQIHi0rQR2BJnLWadKpr/Zp7YnA3rEBJGJo/fXuFUL341Rp0iGb/zDCLKo0Ypm8EGQuUSmoMh8joyORd42vEehjQnWSsQKcbgniazdXo5iMC/N3O+MIAqRbPn0EvL7HUqe7SIUhP8eEeRX0V1xAT8ECULaMRHl6iGZGSuvapKGRTy6hZLO4eb6dPMhGWi5/Wb5djPWFIxzOOiw11kOg0ud7l+H9oeby6XL19J8lIUId38XEeTvorviAr4IUgki2/fvr7hN18i4EqRrhEgIQSwiQTQIorml7g5g6NjRsuwmQAnicld5gpwlrLB6m/Dpj4gg79lxs+l0fXWj6BBFO2hasWwIErXdWZKFCJkRxMKSxWmuGQkiQur4wFY7+jTc7gocwDguOBNI4fYot+Pjv0SkignyhT8ugP6e5osDjyuIJhCCoHkSxhlhGgSxLZGOB57P5Z0ljMuEIG5jOwPIQwqcgySGnLM/fzf+hMUU/4sIQouPVnYZQc7B8yw2iicIMgfjk7rWPs0cNDzpdivIa5mWvYmnIdMVxC7mCwdShN4b+uGgj3ZhDlJt/5tLVZ8jgtBoxcqQEUSzQuhCYWEJIsm0uzPT1D0R5E5muroKdHisGiQTOLFiYpbI28ZL6rZH2YGkouK/7z9EBPmUODDAAmSCmEKTIEjVWhcEkRevBnFopN+ax2JpYEvWBRq6qCKIm+xoBqDoj2Hp9sHZSr9ZC2M3LsKfI8kftVpqVXjfSINFK15EBDmqKau6R9XdV+S13cVi78bvUAvPkiDqDYB4cJVPnBFEGlayTGUdJUHwtHVzQNvsOQ4HBLHLLva3QBC2E/Qoj35YhfNqoHiCID1QFTM4vNYNKPRBEAk/4gxaNUEMXfAyQJmVuY7LXwJBWDhvP5d+eMpU3FmCkT5O8zB3PdDQOHfQcH4O2/d8EhFyG8bqLW6C2uQkHeRqSVno2glFQIrnMi4jvUIgCAvnle264xDP0YjsHU97m8lwfo4ZV/cPm3u+gi+Q9OJHm6Twvex5ZnDdBxfx7EpEsv/nNEE+0y+CTa768/9XAj2nSX8ZB3pDJ/ilObIIhZ9020mVZZAt3v1lY+vmcu/15unD7f3y7enm5ubrS/M1wRSQ+2bb1uF4Y+6OT1w3/92gAfxIE2RBi4+WyAVASsZ9BlYeXt5am7SW/dYy0cW7NEFeRjhvCUukN4UyL2+VxtKmTVGu7Nd1hH8EgryIaMUStrhLTPmSjWYNsLV3a1Z/L99d0qX4JBDkS9FdKlEouApabxwaA3autUly8nph6MGVM4nwVd2oxEsGc+FsO9+Y42nvVCluaWWve8L0vN29IOakyLr6USAI3Qm60o+tTysFdbhEISCO8CzKuQx3e5u3iA371dWpIm/dL7iK1FGsyReBIJ/Eo3sFdbhEIQhMWSeeN+XYudw/fbhfjnD/sL8npp3lDK4YXBRrwgVj/UUqN7yl3/D14J9hvGIJe9xsnxY9VgvBLjfkmYOOC8b6XXkfuA1ZMBbvSu8X1eUShSDfJL5FQb0KrAlcMNaX+V8/4mAs/vDnmBNS4oWCFnc/TqHHMIxxlECL4CDE7vy/OdAYqAG7XEyQn8Gfb6Ot0hM7ILgIb4FgXN69xP898gmjjcxYfyKCkOz0L4wgq3l0o5TdSpjiLI+BGZdt+C9FkAjIFiFuURKkhCmEzZ28oMku9yMiSLojeXSjJEgJY2StqK6FaAV5hxIkj26UOkiJBccLq8pbooRbRNGKZSJIiRIivpUEKVECx8eSICVK4PhSEqREiUqlk7AetZt0g/Q4WlEgyEYt2Oi82w32Nj8/L0PeS7xopPd1Zq70OFpRaJI4/iDf7vrErBPUmJx0zzuDdfXRLxQb9U43LDMzLgvLhEiHZTEX3S9hBYlGTSvRwFOV0Jyx2uwl7qo1GhTdpfyx2pkccc+g1l8tukfFQ/DPt9k3AkGaB3R1SQ6lopzemI9xMqLVtc7qszXNcw0u0o9hjqNmanx0xGulT9RNfN1tphNmxFPUpoHQao4JfDYOF+E+22PtOsedY/EZdOEKl4oOd8MrdwZ1MF8IaDyYf7wqO2E7PF0R67oQ4RXtlf5BIMj8y3DZTUplFwX0uqIdElbrq5/q+AhrPUpQBCgqmT55+vs0g9riKSr8rkT6aMFnA1FrqkkyGMJtJ9Dz0w5YbV2sCJIa0DhQZNc1TjdsD6Rz3lmfzI3tC/UMowlhbNTYxT4DBKkeBYsINN1mRKsX9eii2deRfvVjJtvy061PJG0POtyRwDhOVUgV1uOj1MW6whmO4RMrYUKQ4PCmdGTJHgLQ0iii+3xd2ViXIAEuJGmsByb9skSUZ/4XJUi0QzpJRh+tAW/ZMXQyeQ2CiluyyK4OnhsTYsLRayh8m5IvxTUmNbhEKSYQaXMgCJ3bEKxIH8JQWH/MUh5aA1VjE4LM5Rh0fHiYugVEc947mCDVoz4gq/rpggxGUfcj7CwbaSOeiF48AYozQzd5OjFnJ/UuW8IBAXlzIUiS64mHoBxXaT3TNCeovSZvbEaQcJYGkUtldXax7whB/KML330SZmkpyCk3dLjeiibQjvBdKudYZFBy2gaYMIU/VveqYkyQ6hCceqeoChYj9fyMk+Zqa9LGpgQBFjUyKJypHhKwW3lLCfKZXX0lj6sH0Nr6wDBvC2TI6lCr7e6AHj8Tvkp5gUS+NRPf1+ET5EWQagvQuHX4kV6DzbNKOYa4IMgiZAx9ShNksWCa2NgUT7HaUzcjYJQVv0lagkUlMUnMFeH70CaSG0Gqx4JsoseP1POzSLuOHwTABAuCxP6IovD7ZRGk2kmfYUObH9VdKpuIK0TCTwCMm6QMdi58H26mnR9BhGG1rskPoixJblSJFUljG4LgimVOYNGK/xXcDwTmqfFpAdzE1jAk+q04IhOhaKIElZLBRG04XJtyJEh6bzu1kYLhgBPPrAp3rOONrQhSNENYtOJf6kOLgDlBeknxQpzNZSASglg4IzEji0p8ajdSkZOhiJYnQY4ST8HkIdTiZlYEYU5TRyJWFRAKcgWLVvyhPrQIWBRXSeh1A8PGg6CRWDgj4SqHBmxixhZ0FGLRzpMgiadg9hDilnalnwZoY0uC+C99O2iLNiQma/5KE2T+3WRCIt27QbB7EO7ePp+jWUTIuwVBeP/KhrbszRqHM68wwod8nyB5hX824hggC1OuBOGewobolpFhN7JI2BFkgja2JUhPN9jOEoDMzJkb0gTB+1lEyLtNeS5usJqPrVCdFiMy+FcEkY6XwcQJm0zKuRKEc82Yto+EfsvigetYY1uC+DZlgQ8osrvQ2oqsJq+sHlYBIe82BIm3a7B5G8HrFZ2lM0WXOMkdcLQTASxfgkzsHwITaSwJ0sQaWxPEs5AFmjBa7FtaW5FVdZcRpACvjVWBx2g024STBfOnuAZw1k/Rj1hNynUj4Vuy/uRLkMhuIIvShMG4ZUmQHtbYniB+Y8nh4EcmNPwgBPmHHS3pppAX4R9WBGEyAjiUlZhCL5dzoMGRQFyfhQmJrtY5E4RyGhSwFaCmWtv6zFOksT1B0mbr+bsN4t3P3VRZlNxFJYpW1CEIh6B2fFBDfo6wqDxfZz4qP88q0ifq1Idd0rZtWxGEKUt28chB3wQ1g3OVw+XFOSFA0IlHhRCEXtUm9LWZjSB99wThRdgQ/kv0DuiVaG3Ff80IkhHawppdDe2B/P32Rp3xoNNFgr93N4BRxbnKRQkqQKwTi5ddcZ54NmEAABLOSURBVE6QePbD/aDH0oewe9Fsdo+RzIojlCDD+MpD9Mpd9wQR9V/fweaRVE2DsdjWa/kQRDur0o4gxOqB7CQxYpP9Rh8eHytA0924S/CbiSkvyjRTjCAHdSVAgrQqHNbHbZDqpMtwcPYBy1arw/JFHSNIwtQ/XYFbH3sgiGDIEgPeHIO9UVpbkW3emQtB9LesAggy7HdWxoNw9Jydw4FW5PygD+SIn4pWwcF+DA3ymNIwq2KhUXC0M3KJBEkMdBQKggT3Aa5q6+hDqHETVB3ykpDhqCII9gR3JY0hB/vG6nRWH3eaownutmqlfSHeY97Zrf5OEcT3dQPoV3UHCJK0aAygNxSKCKB2OkyuXXAk/BS47CBqAr/AWEgWxjP7yh9B4NUymApAJ3pSoK8D64/UEJUExM0NvDESgRJ1BhZgq0Lac374miLIYkFJENiMGXwO6rZpawho6OqnS7pUuYAgxCoU23kFsYNJBz4JAhkkBhV4+KbTRaDYstCbrkUQaI2a4o0VBMETHwU1PS/QcN5vRV1fDoAg6aSoNUDMCqawIfCUz4ULQFPvMTCwIhkYGk7skiGEAcPmPq8EAQZesE5D8pMwFwOLcHiMHkGASMgZ3lhJEFR3LKrC3U9CkN8FXV4BgCCCiRiY01dhO2ALeMiQ2Lsu0iCawDCjK9NtxB6zCdsrQSpD4agVeLkTnW7AMhrOJHoEATYNrOONNQiCbENYlIxFoxU/FnR5BXQIIpSNDMckNA9B1mVoRTgTR1YkQmGpFez9CcSMQtj8EgRMQoHi3IGwDXEJCecDPYIAak62FQSxpBeVF0IJ8rWgyyugRRDx/a7DDjIoKnQNsEqNgOuytpihhfnaBUd7tPb4JYiohAwAVQoOhxAnkzB8WY8g8AKeiSAbkKVQ72EZY11mYQ/xIUEQ/HiCnCVBgCBiaKeopk9BFQSO6AGmqx5AuinaIQKmGgmDLYpS8UsQ8TZmoGsSklREcTRcMPUIAghoksZaBIHVED+xsni4BRvqpLbiF/qXqupPzgGLWgQR73EKjg3YugxZQjfE8UYHFhrfxXw7WEPfBBFniQ0wbAzMrejXz+aTX7MbxTaFc4ktQXqSxnoEWYPWaS9Dbw0vpscISaIV39O/VATJ2doGEES0REEEgdRTZPUDHlFddNTShQAtWsbcgcLSExlV/RJEkKYOwJdp8v5sdRDDUBMoEQ9aQrQKqZlCUoSOzafvjAgCz0DeoEUQUd2YQk+4B5w/AKB2r4hSB309+POhMliabvFg9koQ8eQ10EVkMg3bWrE6ksaaBIEiUobAcZkhieVkj+ofM4IMfHQTBUAQsfSVqKRPIWssZgYBbrktRpRQEQoXWYkoJbzZWCkGpD55wAEVzrQIIhrjmqCOPjB4+HoEEbtnGO4OpnJj7t8UxrXjIXuK89+cgsnyJFrxJ/1LSZCh9J2qYJo8qbWCiDaPKTQzYNUxACVkIq4rVITCg0ib8MliPhtH89IOaxFkKBxUB8PGTIwslp70oayxLkFQ934StrGPOmA2HRKt+Df9y3NpXlNvjw5BAJfgOjSQ4V1iwPY94EEQXYJ3Te8m3AxEBhNEu/iOfRJEfG0H4AW1KoYzaBFEvPK5rLEuQaCRD5mx0Nit7GBmF7IT9C/0fl3CWIzUIQjwjFYhdwUWYw9cowVob4Pg2MSYqyWWi2O4M/G055EgwHzbBQeZkY1FhyCArjeTNdYlCPQCB8BhHpcQNpl8yZEgxpWDNMy8cB034EP0IsC7AF5wOFwTNs1R4hjiMU9LZnz5HaBPUugQZC4y1c8gua8OmqSNLEFKgtTPAC2nJ22sTRBACQHN9M1MIr8MTHsktRXZ9SBH4eCsD/963u4aZQWbJ7UrgxXXwTXWTLoAxte6SJuQmAmTTT8ZCxiuFWmxn3NOuiNIrNyjCRTBegaYuo10QHlGIaaNraCNjQgC3HVBJRZ/JgiyYAAIchTrmdMxXLKjB70ezMoL2nmnogEwlE4SC+w42TLQcQQScGZVhwRRY1ABrQ9pKy++T+fAMiedSdFZCQLIbgXthfDrmREkQK92LKuZOILeA57GCLCsLr6hcAVKsGaW1DiCFy1M2pxlIE+ChGs14ATT30RqxZIgY/zMRgQBUmqBvS1yQcCPD+rDCoFdTvoYskzhBIGTjYSxHrhIh/wHG0kSBdYDQSHi/Ko5EuQoFPeKIEhkBdAvXg0TBOi8aODPBx9eGkFaoH6KEwRQY8bAeA6sM6nLJN5ioG6k48v5i+ZIELJuAWMsLca7JkicrZh1BQHkw6I20wmiFf+oDysEtoXjAILgFk6YIIIfepxymRyn/g6UnLS0xr/T/AgyIA3zJ8juTHbmrARxnhGCmGyPQiWsG/XrL54g+L1TA8ZonGfEuxVBYAunqYglfNxMvbWLdPcqoumLf/l5EWSX6T25i1gHM+mZF24FUVQWZGblH/wObBqPwcgbmxG2xauNCAKEpQRjLK1PTCqizjHkP1gXu8s7f3MiSLxdrwZB8D5ZEOSIT1bMShCg884Joig+x673nd+BTedB5Fjl3YYgAfHh8BEEgBUruMU0yYYV0WqVaDoWmiR2jMiJILEgAoyxtCHI6QrSV5zZiCCA/9c1QVQvhAnlb/kd2IwfhF9YECQkAkAQI0dhOBemP0x5TAaV1ODtC6HfCb0nLxErGkcahiCnBGn15Wc2IgigH7i2YqmKM7Ip9ZspQfC52DksCDII2gGvZxe9CBa3lSbONOknD45JyFwj4a0mJuzclHQ2kACCpPVcx0p6V3pmI4IA+oFqYl7bmGN1dX2OaYDZbIYkjp91zpvnE9XOW2z9/6i3wRSHXu2iKaJzNlDlvxvDnCD4dmeocQE4Nvw8PTLP1oVjEmPwWHirA/4y+VmxKC8BPTedlu/azHsuO7MRQYBlXRpq4iOIkI6Yr8YEMYW9C9SYICwQBfgK26YIFcfSS3A7MeLCmIqk0lEZplokMhjcJUwpQVoCsVhpS4VzR2FdcmYjggDTu7xirYfAdzpi3mvuwGaNDHnspgTZZSzQjJYOAEgipMdplbuXUBzDaI7koE9P2Um1x13KrRJkt3PAlJdWxJwTpCc5c9Z8EOwFUuhvBq8LesGfngmyq73ZgQhDguxGzxB4WpgIC1RXo6J6Or98yP9BdOHERJdmZVKgyZEg5MpQccnUud3HYvXxM5sQBCqmoNipcNV0S2Ml6JL1yzNBstSMNCNIK1Z2gAUXc8QCXGqi38QgI0FqSk9SMk+CwKHFVcFE754grLxrRoJAN63yUKtquhmDzew8QVxfo55BQ68YEmTITTGAGR1JZ4QuQacOqHJnhEF4iNQZmxyNuRIkFBKBKTU1Gt0ThM0KGQkCdN1TaUUNfOAIsmAwIUibn2GgAm+wqAdV0KJHSoomsQVfZjxJGZbdESTemWrQHyGCRWAfAFbA1DJq6kk/j688HsE115xkFELSYWEbIATRis+fIO1UzQvg7cFmQmCCZgNXmvBMAtllHEq9UV91sTqgPT+4WWAFTC+jZLB3RJbBBEkMZmQPOzJzZCMIZJIqqnp1GK34XX1UIdAjyMGkI5SEAeJH4CkImIGj1GCJK4nag2RbTadCI7wVjtuA8ioDNR1iLxwnJC6jGgSZD3doCzwiY2UiyAa0OOnvS+Ya754ZQQ5aR8Nh77g2GQXuyUEdtG5AxSshGQuSsCK/DZzRG4KyTeb9S1knPFZWBEwFLaRzcLyGWB5RiyCVdWANIU8mE0FAzS6DMRSAjvbMJpPv8TbpuoYAoIaXFwAE0az8AE3t0CINcWDAvpRoGOxckkUm9ZA8EmQdmHGDaQMiDmgLEkekHkHAeSgUPrMQBNxBx3EQOXQJAfTYtzFBdB32ecmD9gSBlBDAkg7xKI7BBffAJGAmXNzOm36jPmvzAopUIJFArxMKa1gVH5YmQaDtVcKJNwNBZqD273bIQVYAEXQy+RRvk65LkLxyQjQ28cQALQ1CTgi0wSF3BYkAxeQn3M6brkHlkyAAz5vwx9UDYPUH+KVJEEidDg+yJ0gd3mh7oPWwdCGZ+jjQCfW3OUHyygnJQBBwnU5PQ2AAD6cNwvuw8w8Af2Lq5CSH1d1FSS98TpANWMwcg0aLLkGAtrINDtUEQR4oHoxtBWSn0BSoD+9LvAu0NkFyygnR2OUWbQpOREnLEpwRwEnpeAQcOwjecTLAINUhrwQRsyKHcNuq+ASn0JPSJQj2hiwJcjaEelw1lLCmzZGihqFeWAoVE95bEKSl6IAjiTEDQZDBzTeHnRi8NRjNqYnGKLJvelWMjDCO5q2RWpRaBAFeHN67WkLKGoB2Bl2CAIusbAdQgCBctUZ8u6fqQPe1h7CKPoB7XAmjFY0JokDPkZkrC0GQodsbkJG7Vkc2T+Ht7aguF8kpaDyGENlinA9SJVTQIgjA9fAVDMHT7rYjm+kUUaK0CSK2l+0Aalts2lTpdRP8TuWkX43GN3peRwSpuap8koUglaFV35OvApvTugZHUHglCKCOh1oSKmv32p3xuNlFlSxtgohXCNUFxwQxFumdrCFMIHdNkJqzfdq0toHGgKsHMiRfBRbQGxtLMTuvENjilSDAyUMBGvRJ60CbIMDaFUyPbglyYD7jSiNN1QiKY00G9FwfGr/pb04Iomtn0kAmglSGFp3fTb4K7DHHIwWz8wp2Pq8EAXaTIgy1nUm1CQKsXYF11C1BbHJSA1d4iClBkKu+uroaJK5vrJlN4X8aH+lvTkLqLW4GQzaCSKNx9V4FtgoNoiOwOUV4BX4JIspKJKjEVqbRJghwVB3+2J4gR/luHSvgv4ggi4ZsBJG4MXRfBaalxz55hEJi6Re/BBH9ovRBKcoHYtAmCBC0EQh3TgkCp63nhx+NrwX3AIPGDlMy6PlLeQgho7Bbl1sfkHhe0ZbglyCi2YbG5EBxWhrQJ8hQOCoQ7vSru6tRXCYIxbuXShBja5/4KmAtXb2zmmh28UsQUdJjlmg7bVWfIOITCsRUlyuI2zheC/zT+FJ0FxBobQMta2+WyH8gvgp4ePFEguN5RU3ML0FElyYj8YZVMQN9gogyXDCHOSSIHwFrY6oftf42Ikjw4Syp/Ifaf6j/EwOAsQkgC7ISROLohgDk5MCKPi9AwWuMeCa/BBGlySgo2ewZUOgTROxf8HTciVhGG49qAdr3FQa11X9qvKdNVdUYeQycd1xEZoIYGa4h/R9+o7ytC9SCgVryfgkCqELRdzZClj5BxCccrK/OVpBj99OxfgUtOti+RQQx6blDdwcKgCCmJnF9RwB8Q+CcwS81IAUBrvklCDAg43AfSWZkjN0E0/UJIs7Hx3B/rAjiLCiDg77Zgq5evxlBzMpQ5ZBW6IAg2oo6YisBpxveCwjaeaFEa+0HG0OfIMDcFpuiNxQ7YZAuJxYhfYKIQmig/TgiyMSDOC+rI5ACHRNfGz/JL2bdzyHk3QVBNBmCxceA8gk/N4AiPpAn75kgoirO77CrlirOkx3UJwgs3LkhiMuNbTeY5m1g2qTerC+Nv8kveomIDEf9lfFgNvW5JZsTgmjpIaj/EdLSE9k70Ds/AE7kmSDiIpEwOaj8hYF8yUuT+gQB7n/dDUFaA9WbNcHYRMGmoJbA941f5BeDxSdGTVEzNQsAgtisW+qYE5x20KSRdJMDB0CJ854JIgbvJ5+UfJYIhW0+8ECfILAr3QFBRo79HxvmcWl0ovubEcTCINjyGgbgiCCVmTzoZCjLIAZ86cnxPxQPgPjmmSDiYSmX6ljiDyEPlZfDDAginvfcAUFGHlTc+lD78hS0YYOdwLR9deR3z1tXBJkPDwlF5FIbIL63VQcMgPN4JohoTEpbHTZQ4Zua+3kxzIAg4v1PshJk2PfkPUdTehHQZh/ov9Paca1WOz4I0h91Av16vms3AASR7jMkwxlsymk1FRwHtPSkQ7GTHiEHE+iUngkyOxZmcmGQzUB775Bp8/yVDAgi8q6WjSBdlwHhaVhFpn8GT7U6rftVwTUgdjnD1DIdCeJSbUVtR1xNdgBowAwkU6lYYPZqohcEhERg95c6DOjNTFDWJ3EByPVUW/HC4P2lciRm2N2u0o9poMYsjtOIojRyDNIwwg/1IS8Da2fd+dpIHUW9C18L+SJjY2V0zDxlw+5KwRPgM8GiFnf3hdVZppXo+YNE6i3odL2A+Ed9SIkS/7/4pD6kRImXiLW0igmqe6yoiTIlPaeKoyVK5ISOInKRHMVS0uXe1t3uuJRaS7wwrHa6sowychDLl5IRZFKyo8QLxewcDXcmB7B0EIwgw9G4NAeWeMnYGLdB1zgZ9zSYFyTIUXfl/9oiWuL/BqsrF8P08E9G4qYIsltrr3gM1S1RYvGwPuh3OYErGVUUE6RVa5+V3Cjx/4r1QX3QOZ/Uasnos5Vardvur4xnpcZRokSJEs8N/wMYJfL5ohovXAAAAABJRU5ErkJggg==" alt="PowerGrid Logo" style="max-width: 350px; height: auto; margin: 0 auto; display: block;"></div>
+  <div class="header">
+    <h1>SMART Purchase Requisition</h1>
+  </div>
+  
+  <div class="demo-info">
+    <strong>Demo Mode - Offline System</strong>
+  </div>
+  
+  <div class="form-group">
+    <label>Employee Number</label>
+    <input id="empNumber" placeholder="Enter Employee Number" autocomplete="off">
+  </div>
+  
+  <button class="btn" style="width: 100%;" onclick="login()">LOGIN</button>
+</div>
+
+<!-- MAIN APPLICATION -->
+<div class="container hidden" id="mainApp">
+  <button class="logout-btn" onclick="logout()">Logout</button>
+  
+  <div class="header">
+    <h1>SMART Purchase Requisition</h1>
+  </div>
+
+  <!-- User Info -->
+  <div class="user-info">
+    <div class="info-item"><span class="label">Employee:</span><span id="userName"></span></div>
+    <div class="info-item"><span class="label">Employee No:</span><span id="userEmpNo"></span></div>
+    <div class="info-item"><span class="label">Designation:</span><span id="userDesignation"></span></div>
+    <div class="info-item"><span class="label">Department:</span><span id="userDept"></span></div>
+    <div class="info-item"><span class="label">Location:</span><span id="userLocation"></span></div>
+    <div class="info-item"><span class="label">Date:</span><span id="currentDate"></span></div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="tabs">
+    <button class="tab-button active" onclick="switchTab('create')">Create PR</button>
+    <button class="tab-button" onclick="switchTab('mypr')">My PR</button>
+    <button class="tab-button" onclick="switchTab('vendor')">Vendor Search</button>
+    <button class="tab-button" onclick="switchTab('reports')">Reports</button>
+    <button class="tab-button" onclick="switchTab('admin')">Admin</button>
+  </div>
+
+  <!-- CREATE PR TAB -->
+  <div id="createTab" class="tab-content active">
+    <!-- PR Status Box -->
+    <div class="pr-status" id="prStatusBox">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div>
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">CURRENT PR STATUS</div>
+          <div class="pr-number" id="prStatus">Draft (Not Submitted)</div>
+        </div>
+        <div id="prActions"></div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT MATERIAL SEARCH SECTION -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; border: 2px solid #e7f3ff; border-left: 4px solid #003366; margin-bottom: 20px;">
+      <h4 style="color: #003366; margin-bottom: 15px; font-size: 16px;">🔍 Search Materials by Equipment</h4>
+      <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 15px; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Select Equipment</label>
+          <select id="equipmentSearchDropdown">
+            <option value="">-- Select Equipment --</option>
+          </select>
+        </div>
+        <div>
+          <button class="btn" id="searchMaterialsBtn" style="margin: 0; width: 100%;">
+            Search Materials
+          </button>
+        </div>
+      </div>
+      
+      <!-- Results Container -->
+      <div id="equipmentMaterialSearchResults"></div>
+    </div>
+
+    <div style="background: #fff; padding: 20px; border-radius: 8px; border: 2px solid #eee;">
+      <h3 style="margin-bottom: 15px; color: #003366;">Add Items to PR</h3>
+      
+      <!-- EQUIPMENT SEARCH (Optional) -->
+      <div class="form-group">
+        <label class="optional">Search and Select Equipment</label>
+        <div class="search-dropdown-container">
+          <input id="equipmentSearch" type="text" placeholder="Type equipment name or code..." autocomplete="off">
+          <div id="equipmentResults" class="search-results hidden"></div>
+        </div>
+      </div>
+
+      <!-- Equipment Details Display -->
+      <div id="equipmentDetails" class="item-detail-box hidden">
+        <h4 style="color: #003366; margin-bottom: 10px;">Selected Equipment</h4>
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Code:</span><span id="eqCode" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Name:</span><span id="eqName" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Model:</span><span id="eqModel" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Specifications:</span><span id="eqSpecs" class="detail-value"></span></div>
+        </div>
+      </div>
+
+      <!-- MATERIAL SEARCH (Filtered by equipment if selected) -->
+      <div class="form-group">
+        <label>Search and Select Material *</label>
+        <div class="search-dropdown-container">
+          <input id="materialSearch" type="text" placeholder="Type material name or code..." autocomplete="off">
+          <div id="materialResults" class="search-results hidden"></div>
+        </div>
+        <div style="font-size: 12px; color: #666; margin-top: 5px;">
+          <em id="materialHint">All materials available. Select equipment to filter materials.</em>
+        </div>
+      </div>
+
+      <!-- Material Details Display -->
+      <div id="materialDetails" class="item-detail-box hidden">
+        <h4 style="color: #003366; margin-bottom: 10px;">Selected Material</h4>
+        <div class="detail-grid">
+          <div class="detail-item"><span class="detail-label">Code:</span><span id="matCode" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Name:</span><span id="matName" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Model:</span><span id="matModel" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Unit:</span><span id="matUnit" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Approved Rate:</span><span id="matApprovedRate" class="detail-value"></span></div>
+          <div class="detail-item"><span class="detail-label">Material Type:</span><span id="matType" class="detail-value"></span></div>
+          <div class="detail-item" id="oemRateDiv" style="display:none;"><span class="detail-label">OEM Rate <span class="admin-only">ADMIN</span>:</span><span id="matOEMRate" class="detail-value"></span></div>
+        </div>
+      </div>
+
+      <!-- Quantity and Rate -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label>Quantity *</label>
+          <input id="quantity" type="number" min="1" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label>Rate per Unit *</label>
+          <input id="rate" type="number" step="0.01" placeholder="Enter rate">
+        </div>
+      </div>
+
+      <!-- Price Variance Display -->
+      <div id="priceVariance" class="hidden"></div>
+
+      <!-- Vendor Selection (OPTIONAL) -->
+      <div class="form-group">
+        <label class="optional">Vendor Type</label>
+        <select id="vendorType">
+          <option value="">-- Select Vendor Type (Optional) --</option>
+          <option value="OEM">OEM</option>
+          <option value="Local">Local Market</option>
+          <option value="GeM">GeM</option>
+          <option value="Online">Online</option>
+          <option value="Proprietary">Proprietary</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="optional">Vendor Name</label>
+        <input id="vendorName" type="text" placeholder="Enter vendor name (Optional)">
+      </div>
+
+      <div class="form-group">
+        <label class="optional">GST Number</label>
+        <input id="vendorGST" type="text" placeholder="Enter GST (Optional)" maxlength="15">
+      </div>
+
+      <!-- Justification (OPTIONAL) -->
+      <div class="form-group">
+        <label class="optional">Justification</label>
+        <textarea id="justification" rows="3" placeholder="Enter reason for requirement (Optional)"></textarea>
+      </div>
+
+      <button class="btn" onclick="addItemToPR()">Add Item to PR</button>
+      <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+    </div>
+
+    <!-- PR Items List -->
+    <div id="prItemsList" style="margin-top: 20px;">
+      <h3 style="color: #003366; margin-bottom: 15px;">Items in Current PR</h3>
+      <div id="prItemsContainer"></div>
+      <div style="margin-top: 15px;">
+        <button class="btn btn-success" onclick="submitPR()">Submit PR</button>
+        <button class="btn btn-secondary" onclick="saveDraft()">Save as Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY PR TAB -->
+  <div id="myprTab" class="tab-content">
+    <h3 style="color: #003366; margin-bottom: 15px;">My Purchase Requisitions</h3>
+    
+    <!-- Sub Tabs -->
+    <div class="subtabs">
+      <button class="subtab-button active" onclick="switchMyPRSubtab('draft')">Draft</button>
+      <button class="subtab-button" onclick="switchMyPRSubtab('pending')">Pending</button>
+      <button class="subtab-button" onclick="switchMyPRSubtab('approved')">Approved</button>
+    </div>
+
+    <!-- Draft Content -->
+    <div id="draftContent" class="subtab-content active">
+      <div id="draftPRList"></div>
+    </div>
+
+    <!-- Pending Content -->
+    <div id="pendingContent" class="subtab-content">
+      <div id="pendingPRList"></div>
+    </div>
+
+    <!-- Approved Content -->
+    <div id="approvedContent" class="subtab-content">
+      <!-- Purchase Status Sub-tabs -->
+      <div class="subtabs" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 15px;">
+        <button class="subtab-button active" onclick="switchPurchaseSubtab('all')">All</button>
+        <button class="subtab-button" onclick="switchPurchaseSubtab('purchased')">Purchased</button>
+        <button class="subtab-button" onclick="switchPurchaseSubtab('pending')">Purchase Pending</button>
+      </div>
+
+      <div id="purchaseAll" class="subtab-content active">
+        <div id="approvedAllPRList"></div>
+      </div>
+      <div id="purchasePurchased" class="subtab-content">
+        <div id="approvedPurchasedPRList"></div>
+      </div>
+      <div id="purchasePending" class="subtab-content">
+        <div id="approvedPendingPRList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VENDOR SEARCH TAB -->
+  <div id="vendorTab" class="tab-content">
+    <h3 style="color: #003366; margin-bottom: 15px;">Search Vendors</h3>
+    
+    <div class="filter-section">
+      <div class="filter-grid">
+        <div class="form-group">
+          <label>Search by Equipment</label>
+          <input id="vendorEquipmentSearch" type="text" placeholder="Enter equipment name or code">
+        </div>
+        <div class="form-group">
+          <label>Search by Material</label>
+          <input id="vendorMaterialSearch" type="text" placeholder="Enter material name or code">
+        </div>
+        <div class="form-group">
+          <label>Vendor Name</label>
+          <input id="vendorNameSearch" type="text" placeholder="Enter vendor name">
+        </div>
+        <div class="form-group">
+          <label>Vendor Type</label>
+          <select id="vendorTypeFilter">
+            <option value="">All Types</option>
+            <option value="OEM">OEM</option>
+            <option value="Local">Local</option>
+            <option value="GeM">GeM</option>
+            <option value="Online">Online</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <select id="vendorStateFilter">
+            <option value="">All States</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <select id="vendorCityFilter">
+            <option value="">All Cities</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="searchVendors()">Search Vendors</button>
+    </div>
+
+    <div id="vendorSearchResults"></div>
+  </div>
+
+  <!-- REPORTS TAB -->
+  <div id="reportsTab" class="tab-content">
+    <h3 style="color: #003366; margin-bottom: 15px;">PR Reports & Analytics</h3>
+    
+    <div class="filter-section">
+      <h4 style="color: #003366; margin-bottom: 10px;">Report Filters</h4>
+      <div class="filter-grid">
+        <div class="form-group">
+          <label>Report Type</label>
+          <select id="reportType" onchange="updateReportFilters()">
+            <option value="all">All PRs</option>
+            <option value="material">Material-wise</option>
+            <option value="vendor">Vendor-wise</option>
+            <option value="equipment">Equipment-wise</option>
+            <option value="status">Status-wise</option>
+            <option value="date">Date Range</option>
+          </select>
+        </div>
+        <div class="form-group" id="filterMaterial" style="display:none;">
+          <label>Select Material</label>
+          <select id="filterMaterialSelect"></select>
+        </div>
+        <div class="form-group" id="filterVendor" style="display:none;">
+          <label>Select Vendor</label>
+          <select id="filterVendorSelect"></select>
+        </div>
+        <div class="form-group" id="filterEquipment" style="display:none;">
+          <label>Select Equipment</label>
+          <select id="filterEquipmentSelect"></select>
+        </div>
+        <div class="form-group" id="filterStatus" style="display:none;">
+          <label>Select Status</label>
+          <select id="filterStatusSelect">
+            <option value="all">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="generateReport()">Generate Report</button>
+      <button class="btn btn-secondary" onclick="downloadReport()">Download PDF</button>
+    </div>
+
+    <div id="reportResults"></div>
+  </div>
+
+  <!-- ADMIN TAB -->
+  <div id="adminTab" class="tab-content">
+    <h3 style="color: #003366; margin-bottom: 15px;">Admin Panel</h3>
+    
+    <!-- Sub Tabs -->
+    <div class="subtabs">
+      <button class="subtab-button active" onclick="switchAdminSubtab('rates')">Approved Rates</button>
+      <button class="subtab-button" onclick="switchAdminSubtab('newmaterial')">New Material Approval</button>
+      <button class="subtab-button" onclick="switchAdminSubtab('prapproval')">PR Approval</button>
+    </div>
+
+    <!-- Approved Rates -->
+    <div id="ratesContent" class="subtab-content active">
+      <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="color: #003366; margin-bottom: 10px;">Current Approved Rates</h4>
+        <p style="font-size: 13px; color: #666;">These rates are used for variance calculation when creating PRs</p>
+      </div>
+
+      <table id="approvedRatesTable">
+        <thead>
+          <tr>
+            <th>Material Code</th>
+            <th>Material Name</th>
+            <th>Unit</th>
+            <th>Approved Rate</th>
+            <th>Last Updated</th>
+            <th>Price History</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="approvedRatesBody"></tbody>
+      </table>
+
+      <div style="margin-top: 20px;">
+        <h4 style="color: #003366; margin-bottom: 10px;">Update Approved Rate</h4>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Select Material</label>
+            <select id="adminMaterialSelect"></select>
+          </div>
+          <div class="form-group">
+            <label>New Rate</label>
+            <input id="adminNewRate" type="number" step="0.01" placeholder="Enter new rate">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button class="btn" onclick="updateApprovedRate()">Update Rate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Material Approval -->
+    <div id="newmaterialContent" class="subtab-content">
+      <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="color: #856404; margin-bottom: 10px;">⚠ New Material Approvals</h4>
+        <p style="font-size: 13px; color: #856404;">New materials added by users require admin approval before they can be added to master list</p>
+      </div>
+      <div id="pendingMaterialApprovalsContainer"></div>
+    </div>
+
+    <!-- PR Approval (for >15% variance) -->
+    <div id="prapprovalContent" class="subtab-content">
+      <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <h4 style="color: #856404; margin-bottom: 10px;">⚠ PRs Requiring Approval</h4>
+        <p style="font-size: 13px; color: #856404;">PRs with material rates exceeding 15% variance from approved rates require admin approval</p>
+      </div>
+      <div id="pendingPRApprovalsContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Equipment Modal -->
+<div id="addEquipmentModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add New Equipment</h3>
+      <span class="modal-close" onclick="closeModal('addEquipmentModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Equipment Code *</label>
+        <input id="newEqCode" type="text" placeholder="e.g., 1005">
+      </div>
+      <div class="form-group">
+        <label>Equipment Name *</label>
+        <input id="newEqName" type="text" placeholder="Enter equipment name">
+      </div>
+      <div class="form-group">
+        <label>Model *</label>
+        <input id="newEqModel" type="text" placeholder="Enter model">
+      </div>
+      <div class="form-group">
+        <label>Specifications *</label>
+        <textarea id="newEqSpecs" rows="2" placeholder="Enter specifications"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea id="newEqDesc" rows="2" placeholder="Enter description"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addEquipmentModal')">Cancel</button>
+      <button class="btn" onclick="saveNewEquipment()">Add Equipment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Material Modal -->
+<div id="addMaterialModal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add New Material (Temporary Code Assigned)</h3>
+      <span class="modal-close" onclick="closeModal('addMaterialModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;">
+        ⚠ A temporary 10-digit code starting with 7 will be assigned. Admin will approve and assign final code.
+      </div>
+      <div class="form-group">
+        <label>Temporary Material Code (Auto-Generated)</label>
+        <input id="newMatCode" type="text" readonly style="background: #f8f9fa;">
+      </div>
+      <div class="form-group">
+        <label>Material Name *</label>
+        <input id="newMatName" type="text" placeholder="Enter material name">
+      </div>
+      <div class="form-group">
+        <label>Model *</label>
+        <input id="newMatModel" type="text" placeholder="Enter model">
+      </div>
+      <div class="form-group">
+        <label>Specifications *</label>
+        <textarea id="newMatSpecs" rows="2" placeholder="Enter specifications"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="newMatDesc" rows="2" placeholder="Enter description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Related Equipment (Optional)</label>
+        <select id="newMatEquipment">
+          <option value="">-- Select Equipment --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Unit *</label>
+        <input id="newMatUnit" type="text" placeholder="e.g., Kg, Nos, Ltr, Set">
+      </div>
+      <div class="form-group">
+        <label>Suggested Approved Rate</label>
+        <input id="newMatRate" type="number" step="0.01" placeholder="Enter suggested rate">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('addMaterialModal')">Cancel</button>
+      <button class="btn" onclick="saveNewMaterial()">Add Material (Will use in PR)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// MASTER DATA
+// ============================================
+
+const MASTER_DATA = {
+  employee: {
+    empNo: '60018125',
+    name: 'Sandeep Kumar Sah',
+    designation: 'Junior Engineer',
+    department: 'O&M',
+    location: '400 kV Ranchi Substation'
+  },
+  
+  equipment: [
+    { code: '1001', name: '400 kV Circuit Breaker', model: 'ABB LTB-400', specs: '400kV, 3150A, 40kA, SF6 insulated', description: 'High voltage SF6 gas circuit breaker' },
+    { code: '1002', name: '400 kV Power Transformer', model: 'BHEL 400/220kV 315MVA', specs: '315MVA, ONAN/ONAF cooling', description: 'Three-phase power transformer' },
+    { code: '1003', name: 'Isolator', model: 'Crompton Greaves IS-400', specs: '400kV, 3150A, Double break type', description: 'Bus isolator for maintenance' },
+    { code: '1004', name: 'Control & Relay Panel', model: 'Siemens SICAM PAS', specs: 'Numerical protection and control', description: 'Protection and automation panel' }
+  ],
+  
+  materials: [
+    { code: '1000000001', name: 'SF6 Gas', model: 'Grade A SF6', specs: 'Purity: 99.99%', description: 'Sulfur hexafluoride insulating gas', equipment: '1001', unit: 'Kg', approvedRate: 1200.00, oemRate: 1500.00, materialType: 'PAC', oemRate: 1500.00, materialType: 'PAC', priceHistory: [1180, 1150, 1200], lastUpdated: '2024-01-15' },
+    { code: '1000000002', name: 'SF6 Gas Cylinder', model: 'Standard 50kg', specs: '50kg capacity, DOT approved', equipment: '1001', unit: 'Nos', approvedRate: 45000.00, oemRate: 48000.00, materialType: 'Generic', priceHistory: [43500, 44000, 45000], lastUpdated: '2024-01-15' },
+    { code: '1000000003', name: 'Circuit Breaker Nozzle', model: 'ABB Type LTB', specs: 'PTFE material, Arc resistant', equipment: '1001', unit: 'Set', approvedRate: 85000.00, oemRate: 90000.00, materialType: 'PAC', priceHistory: [82000, 84000, 85000], lastUpdated: '2024-01-15' },
+    { code: '1000000004', name: 'Operating Mechanism Spare Parts', model: 'Complete Spare Kit', specs: 'Spring mechanism spares', equipment: '1001', unit: 'Set', approvedRate: 120000.00, oemRate: 125000.00, materialType: 'Generic', priceHistory: [115000, 118000, 120000], lastUpdated: '2024-01-15' },
+    { code: '1000000005', name: 'Transformer Bushing', model: 'ABB GOE-450', specs: '400kV, 3150A, OIP type', equipment: '1002', unit: 'Nos', approvedRate: 350000.00, oemRate: 380000.00, materialType: 'PAC', priceHistory: [340000, 345000, 350000], lastUpdated: '2024-01-15' },
+    { code: '1000000006', name: 'Transformer Oil', model: 'Grade IEC 60296', specs: 'Breakdown voltage > 60kV', equipment: '1002', unit: 'Ltr', approvedRate: 280.00, oemRate: 320.00, materialType: 'Generic', priceHistory: [275, 278, 280], lastUpdated: '2024-01-15' },
+    { code: '1000000007', name: 'Silica Gel Breather', model: 'Standard Breather', specs: 'Self-indicating, Oil seal type', equipment: '1002', unit: 'Nos', approvedRate: 3500.00, oemRate: 4000.00, materialType: 'Generic', priceHistory: [3350, 3400, 3500], lastUpdated: '2024-01-15' },
+    { code: '1000000008', name: 'Buchholz Relay', model: 'ABB REF615', specs: 'Gas operated, Dual float', equipment: '1002', unit: 'Nos', approvedRate: 65000.00, oemRate: 70000.00, materialType: 'PAC', priceHistory: [62000, 63000, 65000], lastUpdated: '2024-01-15' },
+    { code: '1000000009', name: 'Control Relay', model: 'Siemens 3TH40', specs: '110V DC, 4 NO + 4 NC contacts', equipment: '1004', unit: 'Nos', approvedRate: 8500.00, oemRate: 9000.00, materialType: 'Generic', priceHistory: [8200, 8300, 8500], lastUpdated: '2024-01-15' },
+    { code: '1000000010', name: 'Auxiliary Contact', model: 'Standard Type', specs: '1 NO + 1 NC, 250V AC', equipment: '1004', unit: 'Nos', approvedRate: 2800.00, oemRate: 3200.00, materialType: 'Generic', priceHistory: [2650, 2700, 2800], lastUpdated: '2024-01-15' },
+    { code: '1000000011', name: 'Protection Relay', model: 'SEL-351S', specs: 'Numerical, Overcurrent protection', equipment: '1004', unit: 'Nos', approvedRate: 125000.00, oemRate: 135000.00, materialType: 'PAC', priceHistory: [118000, 120000, 125000], lastUpdated: '2024-01-15' },
+    { code: '1000000012', name: 'Panel Indicator Lamp', model: 'LED Type 24V DC', specs: 'Red/Green/Amber, LED', equipment: '1004', unit: 'Nos', approvedRate: 450.00, oemRate: 500.00, materialType: 'Generic', priceHistory: [420, 435, 450], lastUpdated: '2024-01-15' },
+    { code: '1000000013', name: 'Isolator Contact Kit', model: 'Crompton Standard', specs: 'Silver plated copper contacts', equipment: '1003', unit: 'Set', approvedRate: 15000.00, oemRate: 16500.00, materialType: 'Generic', priceHistory: [14500, 14800, 15000], lastUpdated: '2024-01-15' },
+    { code: '1000000014', name: 'Isolator Earth Blade', model: 'Heavy Duty Type', specs: 'Copper alloy, 3150A rated', equipment: '1003', unit: 'Nos', approvedRate: 28000.00, oemRate: 30000.00, materialType: 'PAC', priceHistory: [27000, 27500, 28000], lastUpdated: '2024-01-15' }
+  ],
+  
+  vendors: [
+    {
+      code: '2100000001', name: 'ABB India Ltd', type: 'OEM', category: 'Both', state: 'Karnataka', city: 'Bangalore',
+      gst: '29AABCA1234F1Z5', address: 'Whitefield, Bangalore - 560066',
+      contactPerson: 'Rajesh Kumar', mobile: '9876543210', email: 'rajesh.kumar@in.abb.com',
+      suppliedEquipment: ['1001', '1002'], suppliedMaterials: ['1000000001', '1000000003', '1000000005'],
+      lastSupply: { item: 'SF6 Gas', code: '1000000001', rate: 1180.00, date: '2024-11-15' }
+    },
+    {
+      code: '2100000002', name: 'Siemens Energy India Ltd', type: 'OEM', category: 'Both', state: 'Maharashtra', city: 'Thane',
+      gst: '27AABCS1234F1Z5', address: 'Kalwa Works, Thane - 400605',
+      contactPerson: 'Amit Patel', mobile: '9845678901', email: 'amit.patel@siemens-energy.com',
+      suppliedEquipment: ['1001', '1004'], suppliedMaterials: ['1000000004', '1000000008', '1000000009'],
+      lastSupply: { item: 'Buchholz Relay', code: '1000000008', rate: 62000.00, date: '2024-12-01' }
+    },
+    {
+      code: '2100000003', name: 'GE T&D India Ltd', type: 'OEM', category: 'Material', state: 'Uttar Pradesh', city: 'Noida',
+      gst: '09AABCG1234F1Z5', address: 'Plot 24, Sector 3, Noida - 201301',
+      contactPerson: 'Suresh Menon', mobile: '9123456789', email: 'suresh.menon@ge.com',
+      suppliedEquipment: [], suppliedMaterials: ['1000000006', '1000000007'],
+      lastSupply: { item: 'Transformer Oil', code: '1000000006', rate: 275.00, date: '2024-11-25' }
+    },
+    {
+      code: '2100000004', name: 'BHEL', type: 'OEM', category: 'Equipment', state: 'Karnataka', city: 'Bangalore',
+      gst: '29AABCB1234F1Z5', address: 'BHEL Township, Bangalore - 560058',
+      contactPerson: 'Vikram Singh', mobile: '9988776655', email: 'vikram.s@bhel.in',
+      suppliedEquipment: ['1002'], suppliedMaterials: ['1000000005'],
+      lastSupply: { item: 'Transformer Bushing', code: '1000000005', rate: 345000.00, date: '2024-10-20' }
+    },
+    {
+      code: '2100000005', name: 'Ranchi Electricals', type: 'Local', category: 'Material', state: 'Jharkhand', city: 'Ranchi',
+      gst: '20AABCR1234F1Z5', address: 'Main Road, Ranchi - 834001',
+      contactPerson: 'Ravi Kumar', mobile: '9431234567', email: 'info@ranchielectricals.com',
+      suppliedEquipment: [], suppliedMaterials: ['1000000010', '1000000012'],
+      lastSupply: { item: 'Auxiliary Contact', code: '1000000010', rate: 2700.00, date: '2024-12-10' }
+    }
+  ]
+};
+
+// ============================================
+// STATE MANAGEMENT
+// ============================================
+
+let currentUser = null;
+let currentPR = { items: [], status: 'draft' };
+let allPRs = [];
+let selectedEquipment = null;
+let selectedMaterial = null;
+let prCounter = 9000000000; // Start from 10 digits starting with 9
+let tempMaterialCounter = 7000000000; // Temporary material codes start with 7
+let vendorCounter = 2100000006; // Vendor codes continue from existing
+let pendingMaterialApprovals = [];
+let isAdminMode = true; // Demo: Always admin
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+function login() {
+  const empNo = document.getElementById('empNumber').value.trim();
+  if (!empNo) {
+    alert('Please enter Employee Number');
+    return;
+  }
+  
+  currentUser = { ...MASTER_DATA.employee, empNo, isAdmin: true };
+  document.getElementById('loginDiv').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  
+  displayUserInfo();
+  initializeApp();
+}
+
+function logout() {
+  currentUser = null;
+  currentPR = { items: [], status: 'draft' };
+  selectedEquipment = null;
+  selectedMaterial = null;
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('loginDiv').classList.remove('hidden');
+  document.getElementById('empNumber').value = '';
+}
+
+function displayUserInfo() {
+  document.getElementById('userName').textContent = currentUser.name;
+  document.getElementById('userEmpNo').textContent = currentUser.empNo;
+  document.getElementById('userDesignation').textContent = currentUser.designation;
+  document.getElementById('userDept').textContent = currentUser.department;
+  document.getElementById('userLocation').textContent = currentUser.location;
+  document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+}
+
+function initializeApp() {
+  setupEquipmentSearch();
+  setupMaterialSearch();
+  populateAdminRatesTable();
+  populateFilterDropdowns();
+  populateEquipmentSelectForMaterial();
+  updatePRItemsDisplay();
+  populateStateCity(); // NEW
+  
+  // Initialize Equipment Material Search Extension
+  initEquipmentMaterialSearch();
+}
+
+// ============================================
+// EQUIPMENT MATERIAL SEARCH EXTENSION
+// ============================================
+
+function initEquipmentMaterialSearch() {
+  // Populate equipment dropdown
+  const dropdown = document.getElementById('equipmentSearchDropdown');
+  if (dropdown) {
+    MASTER_DATA.equipment.forEach(eq => {
+      const option = document.createElement('option');
+      option.value = eq.code;
+      option.textContent = `${eq.code} - ${eq.name}`;
+      dropdown.appendChild(option);
+    });
+  }
+  
+  // Add event listener to search button
+  const searchBtn = document.getElementById('searchMaterialsBtn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', searchMaterialsByEquipment);
+  }
+}
+
+function searchMaterialsByEquipment() {
+  const dropdown = document.getElementById('equipmentSearchDropdown');
+  const resultsContainer = document.getElementById('equipmentMaterialSearchResults');
+  
+  // Validation
+  if (!dropdown.value) {
+    alert('⚠ Please select an equipment first');
+    return;
+  }
+  
+  const equipmentCode = dropdown.value;
+  
+  // Show loading
+  resultsContainer.innerHTML = `
+    <div class="loading-message">
+      <span class="loading-spinner"></span>
+      Searching materials for selected equipment...
+    </div>
+  `;
+  
+  // Simulate async API call
+  setTimeout(() => {
+    const materials = MASTER_DATA.materials.filter(m => m.equipment === equipmentCode);
+    
+    if (materials.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="no-materials-message">
+          No materials found for selected equipment
+        </div>
+      `;
+    } else {
+      displayMaterialsSearchResults(materials, equipmentCode);
+    }
+  }, 500);
+}
+
+function displayMaterialsSearchResults(materials, equipmentCode) {
+  const resultsContainer = document.getElementById('equipmentMaterialSearchResults');
+  const equipment = MASTER_DATA.equipment.find(e => e.code === equipmentCode);
+  const equipmentName = equipment ? equipment.name : 'Selected Equipment';
+  
+  let html = `
+    <div class="materials-found-message">
+      ✓ Found ${materials.length} material(s) for: ${equipmentName}
+    </div>
+    <table class="search-materials-table">
+      <thead>
+        <tr>
+          <th>Material Code</th>
+          <th>Material Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Quantity</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  materials.forEach((material, index) => {
+    html += `
+      <tr>
+        <td><strong>${material.code}</strong></td>
+        <td>${material.name}</td>
+        <td><span class="badge ${material.materialType === 'PAC' ? 'badge-pac' : 'badge-generic'}">${material.materialType || 'N/A'}</span></td>
+        <td style="font-size: 12px; color: #666;">${material.description || 'N/A'}</td>
+        <td>
+          <input type="number" 
+                 id="searchMaterialQty_${index}" 
+                 min="1" 
+                 value="1" 
+                 style="width: 80px; padding: 6px;"
+                 placeholder="Qty">
+        </td>
+        <td>
+          <button class="btn btn-small btn-success select-material-btn" 
+                  onclick="selectMaterialFromSearch('${material.code}', ${index})">
+            Select & Add
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  html += `
+      </tbody>
+    </table>
+  `;
+  
+  resultsContainer.innerHTML = html;
+}
+
+function selectMaterialFromSearch(materialCode, index) {
+  // Get quantity from input
+  const qtyInput = document.getElementById(`searchMaterialQty_${index}`);
+  const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
+  
+  if (quantity < 1) {
+    alert('Please enter valid quantity (minimum 1)');
+    return;
+  }
+  
+  // Find material
+  const material = MASTER_DATA.materials.find(m => m.code === materialCode);
+  if (!material) {
+    alert('Material not found');
+    return;
+  }
+  
+  // Also select the equipment if it exists
+  const equipment = MASTER_DATA.equipment.find(e => e.code === material.equipment);
+  
+  // Populate the existing form
+  if (equipment) {
+    selectedEquipment = equipment;
+    document.getElementById('equipmentSearch').value = equipment.name;
+    document.getElementById('eqCode').textContent = equipment.code;
+    document.getElementById('eqName').textContent = equipment.name;
+    document.getElementById('eqModel').textContent = equipment.model;
+    document.getElementById('eqSpecs').textContent = equipment.specs;
+    document.getElementById('equipmentDetails').classList.remove('hidden');
+  }
+  
+  // Populate material details
+  selectedMaterial = material;
+  document.getElementById('materialSearch').value = material.name;
+  document.getElementById('matCode').textContent = material.code;
+  document.getElementById('matName').textContent = material.name;
+  document.getElementById('matModel').textContent = material.model;
+  document.getElementById('matUnit').textContent = material.unit;
+  document.getElementById('matApprovedRate').textContent = '₹' + material.approvedRate.toFixed(2);
+  
+  // Show material type
+  const matType = material.materialType || 'Not Set';
+  const typeClass = matType === 'PAC' ? 'badge-pac' : 'badge-generic';
+  document.getElementById('matType').innerHTML = `<span class="badge ${typeClass}">${matType}</span>`;
+  
+  // Show OEM rate for admin only
+  if (currentUser && currentUser.isAdmin && material.oemRate) {
+    document.getElementById('matOEMRate').textContent = '₹' + material.oemRate.toFixed(2);
+    document.getElementById('oemRateDiv').style.display = 'block';
+  } else {
+    document.getElementById('oemRateDiv').style.display = 'none';
+  }
+  
+  document.getElementById('materialDetails').classList.remove('hidden');
+  
+  // Set quantity and rate
+  document.getElementById('quantity').value = quantity;
+  document.getElementById('rate').value = material.approvedRate.toFixed(2);
+  
+  // Update hint
+  document.getElementById('materialHint').textContent = `Material selected from equipment search`;
+  
+  // Trigger price variance calculation
+  calculatePriceVariance();
+  
+  // Scroll to form
+  document.getElementById('materialDetails').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  alert(`✓ Material "${material.name}" selected!\nQuantity: ${quantity}\nNow you can adjust details and add to PR.`);
+}
+
+// ============================================
+// EQUIPMENT SEARCH
+// ============================================
+
+function setupEquipmentSearch() {
+  const input = document.getElementById('equipmentSearch');
+  const results = document.getElementById('equipmentResults');
+  
+  input.addEventListener('input', function() {
+    const query = this.value.trim().toLowerCase();
+    
+    if (query.length < 2) {
+      results.classList.add('hidden');
+      return;
+    }
+    
+    const filtered = MASTER_DATA.equipment.filter(eq => 
+      eq.code.toLowerCase().includes(query) || 
+      eq.name.toLowerCase().includes(query)
+    );
+    
+    let html = '';
+    
+    if (filtered.length > 0) {
+      html = filtered.map(eq => `
+        <div class="search-result-item" onclick="selectEquipment('${eq.code}')">
+          <div class="result-code">${eq.code}</div>
+          <div class="result-name">${eq.name}</div>
+          <div class="result-details">${eq.model}</div>
+        </div>
+      `).join('');
+    }
+    
+    html += `<div class="search-result-item add-new-option" onclick="openAddEquipmentModal()">➕ Add New Equipment</div>`;
+    
+    results.innerHTML = html;
+    results.classList.remove('hidden');
+  });
+  
+  document.addEventListener('click', function(e) {
+    if (!input.contains(e.target) && !results.contains(e.target)) {
+      results.classList.add('hidden');
+    }
+  });
+}
+
+function selectEquipment(code) {
+  selectedEquipment = MASTER_DATA.equipment.find(eq => eq.code === code);
+  
+  if (!selectedEquipment) return;
+  
+  document.getElementById('eqCode').textContent = selectedEquipment.code;
+  document.getElementById('eqName').textContent = selectedEquipment.name;
+  document.getElementById('eqModel').textContent = selectedEquipment.model;
+  document.getElementById('eqSpecs').textContent = selectedEquipment.specs;
+  document.getElementById('equipmentDetails').classList.remove('hidden');
+  
+  document.getElementById('equipmentSearch').value = selectedEquipment.name;
+  document.getElementById('equipmentResults').classList.add('hidden');
+  
+  const filteredMaterials = MASTER_DATA.materials.filter(m => m.equipment === code);
+  document.getElementById('materialHint').textContent = 
+    `${filteredMaterials.length} materials available for this equipment`;
+}
+
+// ============================================
+// MATERIAL SEARCH
+// ============================================
+
+function setupMaterialSearch() {
+  const input = document.getElementById('materialSearch');
+  const results = document.getElementById('materialResults');
+  
+  input.addEventListener('input', function() {
+    const query = this.value.trim().toLowerCase();
+    
+    if (query.length < 2) {
+      results.classList.add('hidden');
+      return;
+    }
+    
+    let materialsToSearch = MASTER_DATA.materials;
+    if (selectedEquipment) {
+      materialsToSearch = MASTER_DATA.materials.filter(m => m.equipment === selectedEquipment.code);
+    }
+    
+    const filtered = materialsToSearch.filter(mat => 
+      mat.code.toLowerCase().includes(query) || 
+      mat.name.toLowerCase().includes(query)
+    );
+    
+    let html = '';
+    
+    if (filtered.length > 0) {
+      html = filtered.map(mat => `
+        <div class="search-result-item" onclick="selectMaterial('${mat.code}')">
+          <div class="result-code">${mat.code}</div>
+          <div class="result-name">${mat.name}</div>
+          <div class="result-details">${mat.model} | Unit: ${mat.unit} | Rate: ₹${mat.approvedRate.toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+    
+    html += `<div class="search-result-item add-new-option" onclick="openAddMaterialModal()">➕ Add New Material (Temporary Code)</div>`;
+    
+    results.innerHTML = html;
+    results.classList.remove('hidden');
+  });
+  
+  document.addEventListener('click', function(e) {
+    if (!input.contains(e.target) && !results.contains(e.target)) {
+      results.classList.add('hidden');
+    }
+  });
+}
+
+function selectMaterial(code) {
+  selectedMaterial = MASTER_DATA.materials.find(m => m.code === code);
+  
+  if (!selectedMaterial) return;
+  
+  document.getElementById('matCode').textContent = selectedMaterial.code;
+  document.getElementById('matName').textContent = selectedMaterial.name;
+  document.getElementById('matModel').textContent = selectedMaterial.model;
+  document.getElementById('matUnit').textContent = selectedMaterial.unit;
+  document.getElementById('matApprovedRate').textContent = '₹' + selectedMaterial.approvedRate.toFixed(2);
+  document.getElementById('materialDetails').classList.remove('hidden');
+  
+  document.getElementById('rate').value = selectedMaterial.approvedRate.toFixed(2);
+  
+  document.getElementById('materialSearch').value = selectedMaterial.name;
+  document.getElementById('materialResults').classList.add('hidden');
+  
+  calculatePriceVariance();
+}
+
+// ============================================
+// PRICE VARIANCE CALCULATION
+// ============================================
+
+function calculatePriceVariance() {
+  const rateInput = document.getElementById('rate');
+  const varianceDiv = document.getElementById('priceVariance');
+  
+  rateInput.addEventListener('input', showVariance);
+  
+  function showVariance() {
+    const enteredRate = parseFloat(rateInput.value);
+    
+    if (!selectedMaterial || !enteredRate) {
+      varianceDiv.classList.add('hidden');
+      return;
+    }
+    
+    const approvedRate = selectedMaterial.approvedRate;
+    const variance = ((enteredRate - approvedRate) / approvedRate) * 100;
+    const varianceAbs = Math.abs(variance);
+    
+    let className = '';
+    let message = '';
+    
+    if (varianceAbs <= 15) {
+      className = 'price-variance positive';
+      message = '✓ Within approved range (±15%) - Auto approval';
+    } else if (variance > 15) {
+      className = 'price-variance warning';
+      message = `⚠ ${variance.toFixed(2)}% higher than approved rate - REQUIRES ADMIN APPROVAL`;
+    } else {
+      className = 'price-variance negative';
+      message = `✓ ${Math.abs(variance).toFixed(2)}% lower than approved rate - Good pricing!`;
+    }
+    
+    varianceDiv.className = className;
+    varianceDiv.innerHTML = `
+      <div class="variance-label">Price Variance Analysis</div>
+      <div class="variance-value" style="color: ${variance > 15 ? '#e9730c' : variance < 0 ? '#28a745' : '#003366'};">
+        ${variance > 0 ? '+' : ''}${variance.toFixed(2)}%
+      </div>
+      <div style="font-size: 13px; margin-top: 5px;">${message}</div>
+      <div style="font-size: 12px; color: #666; margin-top: 5px;">
+        Approved Rate: ₹${approvedRate.toFixed(2)} | Your Rate: ₹${enteredRate.toFixed(2)}
+      </div>
+    `;
+    varianceDiv.classList.remove('hidden');
+  }
+}
+
+// ============================================
+// ADD ITEM TO PR
+// ============================================
+
+function addItemToPR() {
+  if (!selectedMaterial) {
+    alert('Please select material');
+    return;
+  }
+  
+  const quantity = parseFloat(document.getElementById('quantity').value);
+  const rate = parseFloat(document.getElementById('rate').value);
+  const justification = document.getElementById('justification').value.trim();
+  
+  if (!quantity || quantity <= 0) {
+    alert('Please enter valid quantity');
+    return;
+  }
+  
+  if (!rate || rate <= 0) {
+    alert('Please enter valid rate');
+    return;
+  }
+  
+  // Calculate variance for approval flag
+  const variance = ((rate - selectedMaterial.approvedRate) / selectedMaterial.approvedRate) * 100;
+  const needsApproval = variance > 15;
+  
+  const item = {
+    equipment: selectedEquipment || { code: 'N/A', name: 'Not specified' },
+    material: selectedMaterial,
+    quantity,
+    rate,
+    total: quantity * rate,
+    variance: variance,
+    needsApproval: needsApproval,
+    vendorType: document.getElementById('vendorType').value || 'Not specified',
+    vendorName: document.getElementById('vendorName').value || 'Not specified',
+    vendorGST: document.getElementById('vendorGST').value || 'Not specified',
+    justification: justification || 'Not provided'
+  };
+  
+  currentPR.items.push(item);
+  updatePRItemsDisplay();
+  clearForm();
+  
+  if (needsApproval) {
+    alert('Item added to PR. Note: This PR will require admin approval due to >15% price variance.');
+  } else {
+    alert('Item added to PR successfully!');
+  }
+}
+
+function updatePRItemsDisplay() {
+  const container = document.getElementById('prItemsContainer');
+  
+  if (currentPR.items.length === 0) {
+    container.innerHTML = '<p style="color: #999;">No items added yet</p>';
+    return;
+  }
+  
+  const total = currentPR.items.reduce((sum, item) => sum + item.total, 0);
+  const hasApprovalItems = currentPR.items.some(item => item.needsApproval);
+  
+  container.innerHTML = `
+    ${hasApprovalItems ? '<div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: #856404;">⚠ This PR contains items with >15% variance and will require admin approval</div>' : ''}
+    <table>
+      <thead>
+        <tr>
+          <th>Equipment</th>
+          <th>Material</th>
+          <th>Qty</th>
+          <th>Rate</th>
+          <th>Total</th>
+          <th>Variance</th>
+          <th>Vendor</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${currentPR.items.map((item, idx) => `
+          <tr>
+            <td>${item.equipment.name}</td>
+            <td>${item.material.code} - ${item.material.name}</td>
+            <td>${item.quantity} ${item.material.unit}</td>
+            <td>₹${item.rate.toFixed(2)}</td>
+            <td>₹${item.total.toFixed(2)}</td>
+            <td style="color: ${item.variance > 15 ? '#e9730c' : item.variance < 0 ? '#28a745' : '#333'};">
+              ${item.variance > 0 ? '+' : ''}${item.variance.toFixed(2)}%
+              ${item.needsApproval ? '<br><small style="color: #e9730c;">Needs Approval</small>' : ''}
+            </td>
+            <td>${item.vendorName}</td>
+            <td><button class="btn btn-small btn-danger" onclick="removeItem(${idx})">Remove</button></td>
+          </tr>
+        `).join('')}
+        <tr style="background: #f8f9fa; font-weight: 700;">
+          <td colspan="4" style="text-align: right;">Total:</td>
+          <td colspan="4">₹${total.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+
+function removeItem(index) {
+  currentPR.items.splice(index, 1);
+  updatePRItemsDisplay();
+}
+
+function clearForm() {
+  selectedEquipment = null;
+  selectedMaterial = null;
+  document.getElementById('equipmentSearch').value = '';
+  document.getElementById('materialSearch').value = '';
+  document.getElementById('quantity').value = '';
+  document.getElementById('rate').value = '';
+  document.getElementById('vendorType').value = '';
+  document.getElementById('vendorName').value = '';
+  document.getElementById('vendorGST').value = '';
+  document.getElementById('justification').value = '';
+  document.getElementById('equipmentDetails').classList.add('hidden');
+  document.getElementById('materialDetails').classList.add('hidden');
+  document.getElementById('priceVariance').classList.add('hidden');
+  document.getElementById('materialHint').textContent = 'All materials available. Select equipment to filter materials.';
+}
+
+function saveDraft() {
+  if (currentPR.items.length === 0) {
+    alert('Please add at least one item to save as draft');
+    return;
+  }
+  
+  currentPR.prNumber = String(prCounter++);
+  currentPR.date = new Date().toLocaleDateString();
+  currentPR.status = 'draft';
+  currentPR.employee = currentUser;
+  
+  allPRs.push({ ...currentPR });
+  
+  alert(`Draft saved successfully! PR Number: ${currentPR.prNumber}`);
+  
+  currentPR = { items: [], status: 'draft' };
+  updatePRItemsDisplay();
+  clearForm();
+}
+
+function submitPR() {
+  if (currentPR.items.length === 0) {
+    alert('Please add at least one item to PR');
+    return;
+  }
+  
+  currentPR.prNumber = String(prCounter++);
+  currentPR.date = new Date().toLocaleDateString();
+  
+  // Check if any item needs approval
+  const hasApprovalItems = currentPR.items.some(item => item.needsApproval);
+  
+  if (hasApprovalItems) {
+    currentPR.status = 'pending_approval'; // Needs admin approval
+    currentPR.approvalReason = 'Material rate variance >15%';
+  } else {
+    currentPR.status = 'pending';
+  }
+  
+  currentPR.employee = currentUser;
+  currentPR.purchased = false;
+  
+  allPRs.push({ ...currentPR });
+  
+  if (hasApprovalItems) {
+    alert(`PR submitted for admin approval! PR Number: ${currentPR.prNumber}\nReason: Material rate exceeds 15% variance`);
+  } else {
+    alert(`PR submitted successfully! PR Number: ${currentPR.prNumber}`);
+  }
+  
+  currentPR = { items: [], status: 'draft' };
+  updatePRItemsDisplay();
+  clearForm();
+}
+
+// ============================================
+// MY PR TAB
+// ============================================
+
+function switchMyPRSubtab(tab) {
+  document.querySelectorAll('#myprTab .subtab-button').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('#myprTab .subtab-content').forEach(content => content.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  
+  if (tab === 'draft') {
+    document.getElementById('draftContent').classList.add('active');
+    displayDraftPRs();
+  } else if (tab === 'pending') {
+    document.getElementById('pendingContent').classList.add('active');
+    displayPendingPRs();
+  } else if (tab === 'approved') {
+    document.getElementById('approvedContent').classList.add('active');
+    displayApprovedPRs();
+  }
+}
+
+function switchPurchaseSubtab(tab) {
+  const buttons = document.querySelectorAll('#approvedContent .subtab-button');
+  const contents = document.querySelectorAll('#approvedContent .subtab-content');
+  
+  buttons.forEach(btn => btn.classList.remove('active'));
+  contents.forEach(content => content.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  
+  if (tab === 'all') {
+    document.getElementById('purchaseAll').classList.add('active');
+    displayApprovedAllPRs();
+  } else if (tab === 'purchased') {
+    document.getElementById('purchasePurchased').classList.add('active');
+    displayPurchasedPRs();
+  } else if (tab === 'pending') {
+    document.getElementById('purchasePending').classList.add('active');
+    displayPurchasePendingPRs();
+  }
+}
+
+function displayDraftPRs() {
+  const container = document.getElementById('draftPRList');
+  const drafts = allPRs.filter(pr => pr.status === 'draft');
+  
+  if (drafts.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No draft PRs</div>';
+    return;
+  }
+  
+  container.innerHTML = drafts.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <span class="badge badge-draft">Draft</span>
+      </div>
+      <div style="font-size: 13px; color: #666; margin: 10px 0;">
+        <strong>Items:</strong> ${pr.items.length} | 
+        <strong>Total:</strong> ₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-small btn-success" onclick="submitDraftPR('${pr.prNumber}')">Submit PR</button>
+        <button class="btn btn-small btn-danger" onclick="deleteDraftPR('${pr.prNumber}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function displayPendingPRs() {
+  const container = document.getElementById('pendingPRList');
+  const pending = allPRs.filter(pr => pr.status === 'pending' || pr.status === 'pending_approval');
+  
+  if (pending.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No pending PRs</div>';
+    return;
+  }
+  
+  container.innerHTML = pending.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <span class="badge badge-pending">${pr.status === 'pending_approval' ? 'Awaiting Admin Approval' : 'Pending Approval'}</span>
+      </div>
+      <div style="font-size: 13px; color: #666; margin: 10px 0;">
+        <strong>Items:</strong> ${pr.items.length} | 
+        <strong>Total:</strong> ₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+        ${pr.status === 'pending_approval' ? '<br><strong style="color: #e9730c;">Reason:</strong> ' + pr.approvalReason : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function displayApprovedPRs() {
+  switchPurchaseSubtab('all');
+}
+
+function displayApprovedAllPRs() {
+  const container = document.getElementById('approvedAllPRList');
+  const approved = allPRs.filter(pr => pr.status === 'approved');
+  
+  if (approved.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No approved PRs</div>';
+    return;
+  }
+  
+  container.innerHTML = approved.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <div>
+          <span class="badge badge-approved">Approved</span>
+          ${pr.purchased ? '<span class="badge badge-purchased" style="margin-left: 5px;">Purchased</span>' : '<span class="badge badge-pending" style="margin-left: 5px;">Purchase Pending</span>'}
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #666; margin: 10px 0;">
+        <strong>Items:</strong> ${pr.items.length} | 
+        <strong>Total:</strong> ₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+        ${pr.purchased ? `<br><strong>Purchase Date:</strong> ${pr.purchaseDate}` : ''}
+      </div>
+      ${!pr.purchased ? `<div style="margin-top: 10px;">
+        <button class="btn btn-small btn-success" onclick="markAsPurchased('${pr.prNumber}')">Mark as Purchased</button>
+        <button class="btn btn-small" onclick="downloadPDF('${pr.prNumber}')">Download PDF</button>
+      </div>` : `<div style="margin-top: 10px;">
+        <button class="btn btn-small" onclick="downloadPDF('${pr.prNumber}')">Download PDF</button>
+      </div>`}
+    </div>
+  `).join('');
+}
+
+function displayPurchasedPRs() {
+  const container = document.getElementById('approvedPurchasedPRList');
+  const purchased = allPRs.filter(pr => pr.status === 'approved' && pr.purchased);
+  
+  if (purchased.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No purchased PRs</div>';
+    return;
+  }
+  
+  container.innerHTML = purchased.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <span class="badge badge-purchased">Purchased</span>
+      </div>
+      <div style="font-size: 13px; color: #666; margin: 10px 0;">
+        <strong>Items:</strong> ${pr.items.length} | 
+        <strong>Total:</strong> ₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}<br>
+        <strong>Purchase Date:</strong> ${pr.purchaseDate}
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-small" onclick="downloadPDF('${pr.prNumber}')">Download PDF</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function displayPurchasePendingPRs() {
+  const container = document.getElementById('approvedPendingPRList');
+  const pending = allPRs.filter(pr => pr.status === 'approved' && !pr.purchased);
+  
+  if (pending.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No purchase pending PRs</div>';
+    return;
+  }
+  
+  container.innerHTML = pending.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <span class="badge badge-pending">Purchase Pending</span>
+      </div>
+      <div style="font-size: 13px; color: #666; margin: 10px 0;">
+        <strong>Items:</strong> ${pr.items.length} | 
+        <strong>Total:</strong> ₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-small btn-success" onclick="markAsPurchased('${pr.prNumber}')">Mark as Purchased</button>
+        <button class="btn btn-small" onclick="downloadPDF('${pr.prNumber}')">Download PDF</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function submitDraftPR(prNumber) {
+  const pr = allPRs.find(p => p.prNumber === prNumber);
+  if (pr) {
+    const hasApprovalItems = pr.items.some(item => item.needsApproval);
+    
+    if (hasApprovalItems) {
+      pr.status = 'pending_approval';
+      pr.approvalReason = 'Material rate variance >15%';
+    } else {
+      pr.status = 'pending';
+    }
+    pr.purchased = false;
+    alert('Draft PR submitted successfully!');
+    displayDraftPRs();
+  }
+}
+
+function deleteDraftPR(prNumber) {
+  if (confirm('Are you sure you want to delete this draft?')) {
+    allPRs = allPRs.filter(pr => pr.prNumber !== prNumber);
+    displayDraftPRs();
+  }
+}
+
+function markAsPurchased(prNumber) {
+  const pr = allPRs.find(p => p.prNumber === prNumber);
+  if (pr) {
+    pr.purchased = true;
+    pr.purchaseDate = new Date().toLocaleDateString();
+    alert('PR marked as purchased!');
+    displayApprovedPRs();
+  }
+}
+
+function downloadPDF(prNumber) {
+  const pr = allPRs.find(p => p.prNumber === prNumber);
+  if (!pr) return;
+  
+  let content = `PURCHASE REQUISITION\n`;
+  content += `PR Number: ${pr.prNumber}\n`;
+  content += `Date: ${pr.date}\n`;
+  content += `Status: ${pr.status}\n`;
+  content += `Employee: ${pr.employee.name} (${pr.employee.empNo})\n`;
+  content += `Department: ${pr.employee.department}\n`;
+  content += `Location: ${pr.employee.location}\n\n`;
+  content += `ITEMS:\n`;
+  content += `${'='.repeat(80)}\n`;
+  
+  pr.items.forEach((item, idx) => {
+    content += `\n${idx + 1}. ${item.material.name} (${item.material.code})\n`;
+    content += `   Equipment: ${item.equipment.name}\n`;
+    content += `   Quantity: ${item.quantity} ${item.material.unit}\n`;
+    content += `   Rate: ₹${item.rate.toFixed(2)}\n`;
+    content += `   Total: ₹${item.total.toFixed(2)}\n`;
+    content += `   Vendor: ${item.vendorName}\n`;
+    content += `   Justification: ${item.justification}\n`;
+  });
+  
+  const total = pr.items.reduce((sum, item) => sum + item.total, 0);
+  content += `\n${'='.repeat(80)}\n`;
+  content += `GRAND TOTAL: ₹${total.toFixed(2)}\n`;
+  
+  if (pr.purchased) {
+    content += `\nPurchase Date: ${pr.purchaseDate}\n`;
+  }
+  
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `PR_${pr.prNumber}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================
+// VENDOR SEARCH
+// ============================================
+
+function searchVendors() {
+  const equipmentQuery = document.getElementById('vendorEquipmentSearch').value.trim().toLowerCase();
+  const materialQuery = document.getElementById('vendorMaterialSearch').value.trim().toLowerCase();
+  const nameQuery = document.getElementById('vendorNameSearch').value.trim().toLowerCase();
+  const typeFilter = document.getElementById('vendorTypeFilter').value;
+  const stateFilter = document.getElementById('vendorStateFilter').value;
+  const cityFilter = document.getElementById('vendorCityFilter').value;
+  
+  let filtered = MASTER_DATA.vendors;
+  
+  if (nameQuery) {
+    filtered = filtered.filter(v => v.name.toLowerCase().includes(nameQuery));
+  }
+  
+  if (typeFilter) {
+    filtered = filtered.filter(v => v.type === typeFilter);
+  }
+  
+  if (stateFilter) {
+    filtered = filtered.filter(v => v.state === stateFilter);
+  }
+  
+  if (cityFilter) {
+    filtered = filtered.filter(v => v.city === cityFilter);
+  }
+  
+  if (equipmentQuery) {
+    filtered = filtered.filter(v => {
+      const equipment = MASTER_DATA.equipment.find(e => 
+        e.code.toLowerCase().includes(equipmentQuery) || 
+        e.name.toLowerCase().includes(equipmentQuery)
+      );
+      return equipment && v.suppliedEquipment.includes(equipment.code);
+    });
+  }
+  
+  if (materialQuery) {
+    filtered = filtered.filter(v => {
+      const material = MASTER_DATA.materials.find(m => 
+        m.code.toLowerCase().includes(materialQuery) || 
+        m.name.toLowerCase().includes(materialQuery)
+      );
+      return material && v.suppliedMaterials.includes(material.code);
+    });
+  }
+  
+  displayVendorResults(filtered);
+}
+
+function displayVendorResults(vendors) {
+  const container = document.getElementById('vendorSearchResults');
+  
+  if (vendors.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No vendors found</div>';
+    return;
+  }
+  
+  container.innerHTML = vendors.map(v => {
+    const equipmentNames = v.suppliedEquipment.map(code => {
+      const eq = MASTER_DATA.equipment.find(e => e.code === code);
+      return eq ? eq.name : code;
+    }).join(', ');
+    
+    const materialNames = v.suppliedMaterials.map(code => {
+      const mat = MASTER_DATA.materials.find(m => m.code === code);
+      return mat ? mat.name : code;
+    }).join(', ');
+    
+    return `
+      <div class="vendor-details-card">
+        <div class="vendor-header">${v.code} - ${v.name}</div>
+        
+        <div class="vendor-section">
+          <h4>Contact Information</h4>
+          <div class="vendor-info-grid">
+            <div class="vendor-info-item"><strong>Vendor Code</strong>${v.code}</div>
+            <div class="vendor-info-item"><strong>GST Number</strong>${v.gst}</div>
+            <div class="vendor-info-item"><strong>Contact Person</strong>${v.contactPerson}</div>
+            <div class="vendor-info-item"><strong>Mobile</strong>${v.mobile}</div>
+            <div class="vendor-info-item"><strong>Email</strong>${v.email}</div>
+            <div class="vendor-info-item"><strong>Address</strong>${v.address}</div>
+            <div class="vendor-info-item"><strong>Vendor Type</strong>${v.type}</div>
+          </div>
+        </div>
+        
+        <div class="vendor-section">
+          <h4>Deals In - Equipment</h4>
+          <p style="font-size: 13px;">${equipmentNames || 'None'}</p>
+        </div>
+        
+        <div class="vendor-section">
+          <h4>Deals In - Materials</h4>
+          <p style="font-size: 13px;">${materialNames || 'None'}</p>
+        </div>
+        
+        <div class="vendor-section">
+          <h4>Last Supply</h4>
+          <div class="vendor-info-grid">
+            <div class="vendor-info-item"><strong>Item</strong>${v.lastSupply.item}</div>
+            <div class="vendor-info-item"><strong>Code</strong>${v.lastSupply.code}</div>
+            <div class="vendor-info-item"><strong>Rate</strong>₹${v.lastSupply.rate.toFixed(2)}</div>
+            <div class="vendor-info-item"><strong>Date</strong>${v.lastSupply.date}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// REPORTS
+// ============================================
+
+function updateReportFilters() {
+  const reportType = document.getElementById('reportType').value;
+  
+  document.getElementById('filterMaterial').style.display = 'none';
+  document.getElementById('filterVendor').style.display = 'none';
+  document.getElementById('filterEquipment').style.display = 'none';
+  document.getElementById('filterStatus').style.display = 'none';
+  
+  if (reportType === 'material') {
+    document.getElementById('filterMaterial').style.display = 'block';
+  } else if (reportType === 'vendor') {
+    document.getElementById('filterVendor').style.display = 'block';
+  } else if (reportType === 'equipment') {
+    document.getElementById('filterEquipment').style.display = 'block';
+  } else if (reportType === 'status') {
+    document.getElementById('filterStatus').style.display = 'block';
+  }
+}
+
+function populateFilterDropdowns() {
+  const materialSelect = document.getElementById('filterMaterialSelect');
+  materialSelect.innerHTML = '<option value="">All Materials</option>' + 
+    MASTER_DATA.materials.map(m => `<option value="${m.code}">${m.code} - ${m.name}</option>`).join('');
+  
+  const vendorSelect = document.getElementById('filterVendorSelect');
+  vendorSelect.innerHTML = '<option value="">All Vendors</option>' + 
+    MASTER_DATA.vendors.map(v => `<option value="${v.code}">${v.name}</option>`).join('');
+  
+  const equipmentSelect = document.getElementById('filterEquipmentSelect');
+  equipmentSelect.innerHTML = '<option value="">All Equipment</option>' + 
+    MASTER_DATA.equipment.map(e => `<option value="${e.code}">${e.code} - ${e.name}</option>`).join('');
+}
+
+function generateReport() {
+  const reportType = document.getElementById('reportType').value;
+  const container = document.getElementById('reportResults');
+  
+  if (allPRs.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No PRs available for reporting</div>';
+    return;
+  }
+  
+  let reportHTML = `<h4 style="color: #003366; margin: 20px 0;">Report: ${reportType.toUpperCase()}</h4>`;
+  
+  if (reportType === 'all') {
+    reportHTML += generateAllPRsReport();
+  } else if (reportType === 'material') {
+    reportHTML += generateMaterialWiseReport();
+  } else if (reportType === 'vendor') {
+    reportHTML += generateVendorWiseReport();
+  } else if (reportType === 'equipment') {
+    reportHTML += generateEquipmentWiseReport();
+  } else if (reportType === 'status') {
+    reportHTML += generateStatusWiseReport();
+  }
+  
+  container.innerHTML = reportHTML;
+}
+
+function generateAllPRsReport() {
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>PR Number</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Items</th>
+          <th>Total Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${allPRs.map(pr => {
+          const total = pr.items.reduce((sum, item) => sum + item.total, 0);
+          return `
+            <tr>
+              <td>${pr.prNumber}</td>
+              <td>${pr.date}</td>
+              <td><span class="badge badge-${pr.status === 'pending_approval' ? 'pending' : pr.status}">${pr.status}</span></td>
+              <td>${pr.items.length}</td>
+              <td>₹${total.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function generateMaterialWiseReport() {
+  const materialCode = document.getElementById('filterMaterialSelect').value;
+  const materialData = {};
+  
+  allPRs.forEach(pr => {
+    pr.items.forEach(item => {
+      if (!materialCode || item.material.code === materialCode) {
+        if (!materialData[item.material.code]) {
+          materialData[item.material.code] = {
+            name: item.material.name,
+            quantity: 0,
+            value: 0,
+            count: 0
+          };
+        }
+        materialData[item.material.code].quantity += item.quantity;
+        materialData[item.material.code].value += item.total;
+        materialData[item.material.code].count++;
+      }
+    });
+  });
+  
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Material Code</th>
+          <th>Material Name</th>
+          <th>Total Quantity</th>
+          <th>Total Value</th>
+          <th>PRs Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(materialData).map(([code, data]) => `
+          <tr>
+            <td>${code}</td>
+            <td>${data.name}</td>
+            <td>${data.quantity}</td>
+            <td>₹${data.value.toFixed(2)}</td>
+            <td>${data.count}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function generateVendorWiseReport() {
+  const vendorCode = document.getElementById('filterVendorSelect').value;
+  const vendorData = {};
+  
+  allPRs.forEach(pr => {
+    pr.items.forEach(item => {
+      const vendorName = item.vendorName;
+      if (!vendorCode || vendorName.includes(vendorCode)) {
+        if (!vendorData[vendorName]) {
+          vendorData[vendorName] = { value: 0, count: 0 };
+        }
+        vendorData[vendorName].value += item.total;
+        vendorData[vendorName].count++;
+      }
+    });
+  });
+  
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Vendor Name</th>
+          <th>Total Value</th>
+          <th>Items Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(vendorData).map(([name, data]) => `
+          <tr>
+            <td>${name}</td>
+            <td>₹${data.value.toFixed(2)}</td>
+            <td>${data.count}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function generateEquipmentWiseReport() {
+  const equipmentCode = document.getElementById('filterEquipmentSelect').value;
+  const equipmentData = {};
+  
+  allPRs.forEach(pr => {
+    pr.items.forEach(item => {
+      if (!equipmentCode || item.equipment.code === equipmentCode) {
+        if (!equipmentData[item.equipment.code]) {
+          equipmentData[item.equipment.code] = {
+            name: item.equipment.name,
+            value: 0,
+            count: 0
+          };
+        }
+        equipmentData[item.equipment.code].value += item.total;
+        equipmentData[item.equipment.code].count++;
+      }
+    });
+  });
+  
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th>Equipment Code</th>
+          <th>Equipment Name</th>
+          <th>Total Value</th>
+          <th>Items Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(equipmentData).map(([code, data]) => `
+          <tr>
+            <td>${code}</td>
+            <td>${data.name}</td>
+            <td>₹${data.value.toFixed(2)}</td>
+            <td>${data.count}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function generateStatusWiseReport() {
+  const status = document.getElementById('filterStatusSelect').value;
+  const filtered = status === 'all' ? allPRs : allPRs.filter(pr => pr.status === status);
+  return generateAllPRsReport.call({ allPRs: filtered });
+}
+
+function downloadReport() {
+  alert('Report will be downloaded as PDF. This feature simulates PDF generation.');
+}
+
+// ============================================
+// ADMIN - APPROVED RATES
+// ============================================
+
+function switchAdminSubtab(tab) {
+  document.querySelectorAll('#adminTab .subtab-button').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('#adminTab .subtab-content').forEach(content => content.classList.remove('active'));
+  
+  event.target.classList.add('active');
+  
+  if (tab === 'rates') {
+    document.getElementById('ratesContent').classList.add('active');
+  } else if (tab === 'newmaterial') {
+    document.getElementById('newmaterialContent').classList.add('active');
+    displayPendingMaterialApprovals();
+  } else if (tab === 'prapproval') {
+    document.getElementById('prapprovalContent').classList.add('active');
+    displayPendingPRApprovals();
+  }
+}
+
+function populateAdminRatesTable() {
+  const tbody = document.getElementById('approvedRatesBody');
+  const select = document.getElementById('adminMaterialSelect');
+  
+  tbody.innerHTML = MASTER_DATA.materials.map(m => `
+    <tr>
+      <td>${m.code}</td>
+      <td>${m.name}</td>
+      <td>${m.unit}</td>
+      <td>₹${m.approvedRate.toFixed(2)}</td>
+      <td>${m.lastUpdated}</td>
+      <td>${m.priceHistory.map(p => '₹' + p.toFixed(2)).join(', ')}</td>
+      <td><button class="btn btn-small" onclick="editRate('${m.code}')">Edit</button></td>
+    </tr>
+  `).join('');
+  
+  select.innerHTML = '<option value="">Select Material</option>' + 
+    MASTER_DATA.materials.map(m => `<option value="${m.code}">${m.code} - ${m.name}</option>`).join('');
+}
+
+function editRate(code) {
+  document.getElementById('adminMaterialSelect').value = code;
+  const material = MASTER_DATA.materials.find(m => m.code === code);
+  if (material) {
+    document.getElementById('adminNewRate').value = material.approvedRate.toFixed(2);
+  }
+}
+
+function updateApprovedRate() {
+  const materialCode = document.getElementById('adminMaterialSelect').value;
+  const newRate = parseFloat(document.getElementById('adminNewRate').value);
+  
+  if (!materialCode) {
+    alert('Please select a material');
+    return;
+  }
+  
+  if (!newRate || newRate <= 0) {
+    alert('Please enter valid rate');
+    return;
+  }
+  
+  const material = MASTER_DATA.materials.find(m => m.code === materialCode);
+  if (material) {
+    material.priceHistory.push(material.approvedRate);
+    if (material.priceHistory.length > 5) {
+      material.priceHistory.shift();
+    }
+    material.approvedRate = newRate;
+    material.lastUpdated = new Date().toLocaleDateString();
+    
+    populateAdminRatesTable();
+    alert('Approved rate updated successfully!');
+    
+    document.getElementById('adminMaterialSelect').value = '';
+    document.getElementById('adminNewRate').value = '';
+  }
+}
+
+function displayPendingMaterialApprovals() {
+  const container = document.getElementById('pendingMaterialApprovalsContainer');
+  
+  if (pendingMaterialApprovals.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No pending material approvals</div>';
+    return;
+  }
+  
+  container.innerHTML = pendingMaterialApprovals.map((mat, idx) => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">${mat.code} - ${mat.name}</strong>
+          <span style="margin-left: 10px; font-size: 11px; color: #666;">Temporary Code</span>
+        </div>
+        <span class="badge badge-pending">Pending Approval</span>
+      </div>
+      <div style="margin: 10px 0;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 13px;">
+          <div><strong>Model:</strong> ${mat.model}</div>
+          <div><strong>Unit:</strong> ${mat.unit}</div>
+          <div><strong>Suggested Rate:</strong> ₹${mat.approvedRate || 0}</div>
+          <div><strong>Equipment:</strong> ${mat.equipment || 'Not specified'}</div>
+        </div>
+        <div style="margin-top: 10px;"><strong>Specs:</strong> ${mat.specs}</div>
+        <div style="margin-top: 5px;"><strong>Description:</strong> ${mat.description}</div>
+        <div style="margin-top: 5px;"><strong>Submitted By:</strong> ${mat.submittedBy} on ${mat.submittedDate}</div>
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-small btn-success" onclick="approveMaterial(${idx})">Approve & Add to Master</button>
+        <button class="btn btn-small btn-danger" onclick="rejectMaterial(${idx})">Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function displayPendingPRApprovals() {
+  const container = document.getElementById('pendingPRApprovalsContainer');
+  const pendingPRs = allPRs.filter(pr => pr.status === 'pending_approval');
+  
+  if (pendingPRs.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No PRs requiring approval</div>';
+    return;
+  }
+  
+  container.innerHTML = pendingPRs.map(pr => `
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <div>
+          <strong style="color: #003366;">PR ${pr.prNumber}</strong>
+          <span style="margin-left: 15px; color: #666;">${pr.date}</span>
+        </div>
+        <span class="badge badge-pending">Awaiting Approval</span>
+      </div>
+      <div style="margin: 10px 0;">
+        <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
+          <strong>Employee:</strong> ${pr.employee.name} (${pr.employee.empNo})<br>
+          <strong>Department:</strong> ${pr.employee.department}<br>
+          <strong>Reason for Approval:</strong> ${pr.approvalReason}
+        </div>
+        <table style="margin: 0;">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Approved Rate</th>
+              <th>Variance</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pr.items.map(item => `
+              <tr>
+                <td>${item.material.name}</td>
+                <td>${item.quantity} ${item.material.unit}</td>
+                <td>₹${item.rate.toFixed(2)}</td>
+                <td>₹${item.material.approvedRate.toFixed(2)}</td>
+                <td style="color: ${item.variance > 15 ? '#e9730c' : '#333'};">
+                  ${item.variance > 0 ? '+' : ''}${item.variance.toFixed(2)}%
+                </td>
+                <td>₹${item.total.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+            <tr style="background: #f8f9fa; font-weight: 700;">
+              <td colspan="5" style="text-align: right;">Total:</td>
+              <td>₹${pr.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top: 10px;">
+        <button class="btn btn-small btn-success" onclick="approvePR('${pr.prNumber}')">Approve PR</button>
+        <button class="btn btn-small btn-danger" onclick="rejectPR('${pr.prNumber}')">Reject PR</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function approveMaterial(index) {
+  const material = pendingMaterialApprovals[index];
+  material.lastUpdated = new Date().toLocaleDateString();
+  material.priceHistory = [material.approvedRate];
+  
+  // Generate permanent material code
+  const maxCode = Math.max(...MASTER_DATA.materials.map(m => parseInt(m.code)));
+  material.code = String(maxCode + 1).padStart(10, '0');
+  
+  MASTER_DATA.materials.push(material);
+  pendingMaterialApprovals.splice(index, 1);
+  
+  populateAdminRatesTable();
+  displayPendingMaterialApprovals();
+  alert(`Material approved! New permanent code assigned: ${material.code}`);
+}
+
+function rejectMaterial(index) {
+  if (confirm('Are you sure you want to reject this material?')) {
+    pendingMaterialApprovals.splice(index, 1);
+    displayPendingMaterialApprovals();
+    alert('Material rejected');
+  }
+}
+
+function approvePR(prNumber) {
+  const pr = allPRs.find(p => p.prNumber === prNumber);
+  if (pr) {
+    pr.status = 'approved';
+    pr.purchased = false;
+    alert('PR approved successfully!');
+    displayPendingPRApprovals();
+  }
+}
+
+function rejectPR(prNumber) {
+  if (confirm('Are you sure you want to reject this PR?')) {
+    const pr = allPRs.find(p => p.prNumber === prNumber);
+    if (pr) {
+      pr.status = 'rejected';
+      alert('PR rejected');
+      displayPendingPRApprovals();
+    }
+  }
+}
+
+// ============================================
+// MODALS
+// ============================================
+
+function openAddEquipmentModal() {
+  document.getElementById('addEquipmentModal').classList.remove('hidden');
+  document.getElementById('equipmentResults').classList.add('hidden');
+}
+
+function openAddMaterialModal() {
+  // Generate temporary material code
+  const tempCode = String(tempMaterialCounter++);
+  document.getElementById('newMatCode').value = tempCode;
+  
+  document.getElementById('addMaterialModal').classList.remove('hidden');
+  document.getElementById('materialResults').classList.add('hidden');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.add('hidden');
+}
+
+function populateEquipmentSelectForMaterial() {
+  const select = document.getElementById('newMatEquipment');
+  select.innerHTML = '<option value="">-- Select Equipment --</option>' + 
+    MASTER_DATA.equipment.map(e => `<option value="${e.code}">${e.code} - ${e.name}</option>`).join('');
+}
+
+function saveNewEquipment() {
+  const code = document.getElementById('newEqCode').value.trim();
+  const name = document.getElementById('newEqName').value.trim();
+  const model = document.getElementById('newEqModel').value.trim();
+  const specs = document.getElementById('newEqSpecs').value.trim();
+  const description = document.getElementById('newEqDesc').value.trim();
+  
+  if (!code || !name || !model || !specs || !description) {
+    alert('Please fill all fields');
+    return;
+  }
+  
+  if (MASTER_DATA.equipment.find(e => e.code === code)) {
+    alert('Equipment code already exists');
+    return;
+  }
+  
+  MASTER_DATA.equipment.push({ code, name, model, specs, description });
+  
+  alert('Equipment added successfully!');
+  closeModal('addEquipmentModal');
+  
+  document.getElementById('newEqCode').value = '';
+  document.getElementById('newEqName').value = '';
+  document.getElementById('newEqModel').value = '';
+  document.getElementById('newEqSpecs').value = '';
+  document.getElementById('newEqDesc').value = '';
+  
+  populateEquipmentSelectForMaterial();
+}
+
+function saveNewMaterial() {
+  const code = document.getElementById('newMatCode').value.trim();
+  const name = document.getElementById('newMatName').value.trim();
+  const model = document.getElementById('newMatModel').value.trim();
+  const specs = document.getElementById('newMatSpecs').value.trim();
+  const description = document.getElementById('newMatDesc').value.trim();
+  const equipment = document.getElementById('newMatEquipment').value;
+  const unit = document.getElementById('newMatUnit').value.trim();
+  const approvedRate = parseFloat(document.getElementById('newMatRate').value) || 0;
+  
+  if (!code || !name || !model || !specs || !unit) {
+    alert('Please fill all required fields');
+    return;
+  }
+  
+  const newMaterial = {
+    code, 
+    name, 
+    model, 
+    specs, 
+    description, 
+    equipment, 
+    unit, 
+    approvedRate,
+    priceHistory: [],
+    submittedBy: currentUser.empNo,
+    submittedDate: new Date().toLocaleDateString(),
+    isTemporary: true
+  };
+  
+  // Add to pending approvals
+  pendingMaterialApprovals.push(newMaterial);
+  
+  // Also add to materials list temporarily so it can be used in PR
+  MASTER_DATA.materials.push(newMaterial);
+  
+  alert('Material added with temporary code! You can now use it in your PR. Admin approval will assign permanent code.');
+  closeModal('addMaterialModal');
+  
+  document.getElementById('newMatName').value = '';
+  document.getElementById('newMatModel').value = '';
+  document.getElementById('newMatSpecs').value = '';
+  document.getElementById('newMatDesc').value = '';
+  document.getElementById('newMatEquipment').value = '';
+  document.getElementById('newMatUnit').value = '';
+  document.getElementById('newMatRate').value = '';
+}
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+  
+  const tabMap = {
+    'create': 'createTab',
+    'mypr': 'myprTab',
+    'vendor': 'vendorTab',
+    'reports': 'reportsTab',
+    'admin': 'adminTab'
+  };
+  
+  document.getElementById(tabMap[tabName]).classList.add('active');
+  event.target.classList.add('active');
+  
+  if (tabName === 'mypr') {
+    switchMyPRSubtab('draft');
+  }
+}
+
+// Add some demo PRs for testing
+window.addEventListener('DOMContentLoaded', function() {
+  // Add 1 demo approved PR for testing purchase functionality
+  allPRs.push({
+    prNumber: String(prCounter++),
+    date: '2024-02-10',
+    status: 'approved',
+    purchased: false,
+    employee: MASTER_DATA.employee,
+    items: [{
+      equipment: MASTER_DATA.equipment[0],
+      material: MASTER_DATA.materials[0],
+      quantity: 50,
+      rate: 1200,
+      total: 60000,
+      variance: 0,
+      needsApproval: false,
+      vendorType: 'OEM',
+      vendorName: 'ABB India Ltd',
+      vendorGST: '29AABCA1234F1Z5',
+      justification: 'Annual maintenance requirement'
+    }]
+  });
+});
+
+// ============================================
+// STATE/CITY FILTER FUNCTIONS
+// ============================================
+
+function populateStateCity() {
+  const stateFilter = document.getElementById('vendorStateFilter');
+  const cityFilter = document.getElementById('vendorCityFilter');
+  
+  if (!stateFilter || !cityFilter) return;
+  
+  // Get unique states and cities
+  const states = [...new Set(MASTER_DATA.vendors.map(v => v.state).filter(Boolean))].sort();
+  const cities = [...new Set(MASTER_DATA.vendors.map(v => v.city).filter(Boolean))].sort();
+  
+  // Populate dropdowns
+  states.forEach(state => {
+    const opt = document.createElement('option');
+    opt.value = state;
+    opt.textContent = state;
+    stateFilter.appendChild(opt);
+  });
+  
+  cities.forEach(city => {
+    const opt = document.createElement('option');
+    opt.value = city;
+    opt.textContent = city;
+    cityFilter.appendChild(opt);
+  });
+}
+
+</script>
+
+</body>
+</html>
