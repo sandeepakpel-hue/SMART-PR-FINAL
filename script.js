@@ -592,13 +592,19 @@ function populateEquipmentDropdown() {
 
 function login() {
   const empNo = document.getElementById('empNumber').value.trim();
+  const validLoginCode = '18125';
   
   if (!empNo) {
     alert('Please enter Employee Number');
     return;
   }
+
+  if (empNo !== validLoginCode) {
+    alert('Invalid login details. Please enter 18125.');
+    return;
+  }
   
-  currentUser = MASTER_DATA.employee;
+  currentUser = { ...MASTER_DATA.employee, empNo: validLoginCode };
   
   document.getElementById('loginDiv').classList.add('hidden');
   document.getElementById('mainApp').classList.remove('hidden');
